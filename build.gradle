@@ -1,0 +1,29 @@
+apply plugin: 'scala'
+apply plugin: 'eclipse'
+
+sourceCompatibility=1.7
+targetCompatibility=1.7
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    scalaTools "org.scala-lang:scala-compiler:2.10.0"
+    
+    compile "org.scala-lang:scala-library:2.10.0"
+    compile "com.sun.jersey:jersey-core:1.+"
+    compile "com.sun.jersey:jersey-client:1.+"
+    compile "org.scalatest:scalatest_2.10:1.9.1"
+    
+    testCompile "junit:junit:4.+"
+}
+
+// Use the sbt compiler (not scalac ant task)
+tasks.withType(ScalaCompile) {
+    scalaCompileOptions.useAnt = false
+}
+
+task showCompileClasspath << {
+   sourceSets.main.compileClasspath.each { println it }
+}
