@@ -4,8 +4,13 @@ import org.scalatest.junit.ShouldMatchersForJUnit
 import org.scalatest.Suite
 import org.junit.Test
 import java.net.URI
+import org.scalatest.FlatSpec
+import org.scalatest.matchers.ShouldMatchers
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
-class DslTest extends Suite with ShouldMatchersForJUnit {
+@RunWith(classOf[JUnitRunner])
+class DslTest extends FlatSpec with ShouldMatchers {
   import Api._
   import Dsl._
 
@@ -15,8 +20,7 @@ class DslTest extends Suite with ShouldMatchersForJUnit {
     }
   }
 
-  @Test
-  def testExample1 {
+  "The Dsl" should "support a basic rest use case with a RequestBuilder" in {
     val personJson = """{ "name": "Jason" }"""
     val r1 = driver.execute(RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/"))
     val r2 = driver.execute(RequestBuilder().withMethod(POST).withUrl("http://api.rest.org/person/").withBody(personJson))
@@ -27,8 +31,7 @@ class DslTest extends Suite with ShouldMatchersForJUnit {
     val r6 = driver.execute(RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/"))
   }
 
-  @Test
-  def testExample2 {
+  it should "support a basic rest use case, reusing a RequestBuilder" in {
     val personJson = """{ "name": "Jason" }"""
     val rb = RequestBuilder().withUrl("http://api.rest.org/person/")
     val r1 = driver.execute(rb.withMethod(GET))
@@ -40,8 +43,7 @@ class DslTest extends Suite with ShouldMatchersForJUnit {
     val r6 = driver.execute(rb.withMethod(GET))
   }
 
-  @Test
-  def example3 {
+  it should "support a basic rest use case, with Method boostrapping the DSL and infix notation" in {
     val personJson = """{ "name": "Jason" }"""
     val r1 = driver.execute(GET withUrl "http://api.rest.org/person/")
     val r2 = driver.execute(POST withUrl "http://api.rest.org/person/" withBody personJson)
@@ -52,8 +54,7 @@ class DslTest extends Suite with ShouldMatchersForJUnit {
     val r6 = driver.execute(GET withUrl "http://api.rest.org/person/")
   }
 
-  @Test
-  def example4 {
+  it should "support a basic rest use case, with Method boostrapping the DSL and execute method" in {
     val personJson = """{ "name": "Jason" }"""
     val r1 = GET withUrl "http://api.rest.org/person/" execute ()
     val r2 = POST withUrl "http://api.rest.org/person/" withBody personJson execute ()
