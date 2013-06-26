@@ -2,10 +2,11 @@ package org.iainhull.resttest
 
 import com.sun.jersey.api.client.Client
 import com.sun.jersey.api.client.ClientResponse
-import api._
 import scala.collection.JavaConverters
 
 object Jersey {
+  import Api._
+  
   implicit object Driver extends Driver {
     val jersey = Client.create()
 

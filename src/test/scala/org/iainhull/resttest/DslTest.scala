@@ -6,27 +6,29 @@ import org.junit.Test
 import java.net.URI
 
 class DslTest extends Suite with ShouldMatchersForJUnit {
-  import api._
-  import dsl._
+  import Api._
+  import Dsl._
 
-  val driver = new Driver {
+  implicit val driver = new Driver {
     def execute(request: Request): Response = {
       Response(200, Map("X-Person-Id" -> List("1234")), None)
     }
   }
 
   @Test
-  def testRequestBuilder {
-
-    val request1: Request = RequestBuilder().withMethod(GET).withUrl("http://localhost/").withBody("body")
-    request1 should have('method(GET), 'uri(new URI("http://localhost/")), 'body(Some("body")))
-
-    val request2: Request = RequestBuilder().withMethod(GET).withUrl("http://localhost/").addPath("foo").addPath("bar")
-    request2 should have('method(GET), 'uri(new URI("http://localhost/foo/bar")))
+  def testExample1 {
+    val personJson = """{ "name": "Jason" }"""
+    val r1 = driver.execute(RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/"))
+    val r2 = driver.execute(RequestBuilder().withMethod(POST).withUrl("http://api.rest.org/person/").withBody(personJson))
+    val id = r2.headers.get("X-Person-Id").get.head
+    val r3 = driver.execute(RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/").addPath(id))
+    val r4 = driver.execute(RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/"))
+    val r5 = driver.execute(RequestBuilder().withMethod(DELETE).withUrl("http://api.rest.org/person/").addPath(id))
+    val r6 = driver.execute(RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/"))
   }
 
   @Test
-  def testExamples {
+  def testExample2 {
     val personJson = """{ "name": "Jason" }"""
     val rb = RequestBuilder().withUrl("http://api.rest.org/person/")
     val r1 = driver.execute(rb.withMethod(GET))
@@ -36,5 +38,29 @@ class DslTest extends Suite with ShouldMatchersForJUnit {
     val r4 = driver.execute(rb.withMethod(GET))
     val r5 = driver.execute(rb.withMethod(DELETE).addPath(id))
     val r6 = driver.execute(rb.withMethod(GET))
+  }
+
+  @Test
+  def example3 {
+    val personJson = """{ "name": "Jason" }"""
+    val r1 = driver.execute(GET withUrl "http://api.rest.org/person/")
+    val r2 = driver.execute(POST withUrl "http://api.rest.org/person/" withBody personJson)
+    val id = r2.headers.get("X-Person-Id").get.head
+    val r3 = driver.execute(GET withUrl "http://api.rest.org/person/" addPath id)
+    val r4 = driver.execute(GET withUrl "http://api.rest.org/person/")
+    val r5 = driver.execute(DELETE withUrl "http://api.rest.org/person/" addPath id)
+    val r6 = driver.execute(GET withUrl "http://api.rest.org/person/")
+  }
+
+  @Test
+  def example4 {
+    val personJson = """{ "name": "Jason" }"""
+    val r1 = GET withUrl "http://api.rest.org/person/" execute ()
+    val r2 = POST withUrl "http://api.rest.org/person/" withBody personJson execute ()
+    val id = r2.headers.get("X-Person-Id").get.head
+    val r3 = GET withUrl "http://api.rest.org/person/" addPath id execute ()
+    val r4 = GET withUrl "http://api.rest.org/person/" execute ()
+    val r5 = DELETE withUrl "http://api.rest.org/person/" addPath id execute ()
+    val r6 = GET withUrl "http://api.rest.org/person/" execute ()
   }
 }
