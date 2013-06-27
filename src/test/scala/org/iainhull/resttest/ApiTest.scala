@@ -35,10 +35,10 @@ class ApiTest extends FlatSpec with ShouldMatchers {
 
   "A RequestBuilder" should "simplify the creation of request objects" in {
     val request1: Request = RequestBuilder().withMethod(GET).withUrl("http://localhost/").withBody("body").toRequest
-    request1 should have('method(GET), 'uri(new URI("http://localhost/")), 'body(Some("body")))
+    request1 should have('method(GET), 'url(new URI("http://localhost/")), 'body(Some("body")))
 
     val request2: Request = RequestBuilder().withMethod(GET).withUrl("http://localhost/").addPath("foo").addPath("bar").toRequest
-    request2 should have('method(GET), 'uri(new URI("http://localhost/foo/bar")))
+    request2 should have('method(GET), 'url(new URI("http://localhost/foo/bar")))
   }
   
   it should "support reuse of partialy constructed builders (ensure builder is immutable)" in {
@@ -46,8 +46,8 @@ class ApiTest extends FlatSpec with ShouldMatchers {
     val rb1 = base.withMethod(POST).addPath("foo")
     val rb2 = base.withBody("everybody")
     
-    base.toRequest should have('method(GET), 'uri(new URI("http://localhost/")), 'body(Some("body")))
-    rb1.toRequest should have('method(POST), 'uri(new URI("http://localhost/foo")), 'body(Some("body")))
-    rb2.toRequest should have('method(GET), 'uri(new URI("http://localhost/")), 'body(Some("everybody")))
+    base.toRequest should have('method(GET), 'url(new URI("http://localhost/")), 'body(Some("body")))
+    rb1.toRequest should have('method(POST), 'url(new URI("http://localhost/foo")), 'body(Some("body")))
+    rb2.toRequest should have('method(GET), 'url(new URI("http://localhost/")), 'body(Some("everybody")))
   }
 }
