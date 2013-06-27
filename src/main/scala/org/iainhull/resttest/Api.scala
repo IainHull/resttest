@@ -12,7 +12,7 @@ object Api {
   case object PUT extends Method("PUT")
   case object DELETE extends Method("DELETE")
 
-  case class Request(method: Method, uri: URI, headers: Map[String, List[String]] = Map(), body: Option[String] = None)
+  case class Request(method: Method, url: URI, headers: Map[String, List[String]] = Map(), body: Option[String] = None)
   case class Response(statusCode: Int, headers: Map[String, List[String]], body: Option[String])
 
   def toHeaders(hs: (String, String)*): Map[String, List[String]] = {
@@ -53,8 +53,8 @@ object Api {
     val Forbidden = 403
     val NotFound = 404
   }
-  
-    case class RequestBuilder(
+
+  case class RequestBuilder(
     method: Option[Method],
     url: Option[URI],
     query: Seq[(String, String)],
@@ -78,7 +78,7 @@ object Api {
   }
 
   object RequestBuilder {
-    val emptyBuilder = RequestBuilder(None, None, Seq(), Seq(), None)
+    implicit val emptyBuilder = RequestBuilder(None, None, Seq(), Seq(), None)
 
     def apply(): RequestBuilder = {
       emptyBuilder

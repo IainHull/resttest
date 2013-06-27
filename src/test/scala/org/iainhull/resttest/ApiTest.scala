@@ -18,7 +18,7 @@ class ApiTest extends FlatSpec with ShouldMatchers {
   }
 
   "A Simple Driver" should "take a request and return a static response" in {
-    val response = driver.execute(Request(method = GET, uri = new URI("http://api.rest.org/person")))
+    val response = driver.execute(Request(method = GET, url = new URI("http://api.rest.org/person")))
     response.statusCode should be(Status.OK)
   }
 

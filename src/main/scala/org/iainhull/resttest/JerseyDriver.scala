@@ -16,7 +16,7 @@ object Jersey {
     }
 
     def createClientResponse(request: Request): ClientResponse = {
-      val resource = jersey.resource(request.uri)
+      val resource = jersey.resource(request.url)
       request.method match {
         case GET => resource.get(classOf[ClientResponse])
         case POST => resource.post(classOf[ClientResponse])

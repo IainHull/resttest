@@ -15,12 +15,98 @@ class DslTest extends FlatSpec with ShouldMatchers {
   import Dsl._
 
   implicit val driver = new Driver {
+    var lastRequest: Request = _
+    var nextResponse = Response(200, Map("X-Person-Id" -> List("1234")), None)
+
     def execute(request: Request): Response = {
-      Response(200, Map("X-Person-Id" -> List("1234")), None)
+      lastRequest = request
+      nextResponse
     }
   }
 
-  "The Dsl" should "support a basic rest use case with a RequestBuilder" in {
+  "The DSL" should "support a basic rest use case with a RequestBuilder" in {
+    RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/").toRequest should
+      have('method(GET), 'url(new URI("http://api.rest.org/person/")))
+
+    val personJson = """{ "name": "Jason" }"""
+    RequestBuilder().withMethod(POST).withUrl("http://api.rest.org/person/").withBody(personJson).toRequest should
+      have('method(POST), 'url(new URI("http://api.rest.org/person/")), 'body(Some(personJson)))
+
+    val id = "myid"
+    RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/").addPath(id).toRequest should
+      have('method(GET), 'url(new URI("http://api.rest.org/person/myid")))
+
+    RequestBuilder().withMethod(DELETE).withUrl("http://api.rest.org/person/").addPath(id).toRequest should
+      have('method(DELETE), 'url(new URI("http://api.rest.org/person/myid")))
+  }
+
+  it should "support a basic rest use case, reusing a RequestBuilder" in {
+    val rb = RequestBuilder().withUrl("http://api.rest.org/person/")
+
+    rb.withMethod(GET).toRequest should
+      have('method(GET), 'url(new URI("http://api.rest.org/person/")))
+
+    val personJson = """{ "name": "Jason" }"""
+    rb.withMethod(POST).withBody(personJson).toRequest should
+      have('method(POST), 'url(new URI("http://api.rest.org/person/")), 'body(Some(personJson)))
+
+    val id = "myid"
+    rb.withMethod(GET).addPath(id).toRequest should
+      have('method(GET), 'url(new URI("http://api.rest.org/person/myid")))
+
+    rb.withMethod(DELETE).addPath(id).toRequest should
+      have('method(DELETE), 'url(new URI("http://api.rest.org/person/myid")))
+  }
+
+  it should "support a basic rest use case, with Method boostrapping the DSL and infix notation" in {
+    (GET withUrl "http://api.rest.org/person/").toRequest should
+      have('method(GET), 'url(new URI("http://api.rest.org/person/")))
+
+    val personJson = """{ "name": "Jason" }"""
+    (POST withUrl "http://api.rest.org/person/" withBody personJson).toRequest should
+      have('method(POST), 'url(new URI("http://api.rest.org/person/")), 'body(Some(personJson)))
+
+    val id = "myid"
+    (GET withUrl "http://api.rest.org/person/" addPath id).toRequest should
+      have('method(GET), 'url(new URI("http://api.rest.org/person/myid")))
+
+    (DELETE withUrl "http://api.rest.org/person/" addPath id).toRequest should
+      have('method(DELETE), 'url(new URI("http://api.rest.org/person/myid")))
+  }
+
+  it should "support a basic rest use case, with Method boostrapping the DSL and execute method" in {
+    val personJson = """{ "name": "Jason" }"""
+    GET withUrl "http://api.rest.org/person/" execute () should be(driver.nextResponse)
+    driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
+
+    POST withUrl "http://api.rest.org/person/" withBody personJson execute ()
+    driver.lastRequest should have('method(POST), 'url(new URI("http://api.rest.org/person/")), 'body(Some(personJson)))
+  }
+
+  it should "support abstracting common values with codeblocks" in {
+    val personJson = """{ "name": "Jason" }"""
+    withUrl("http://api.rest.org/person/") apply { implicit rb =>
+      GET execute ()
+      driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
+
+      POST withBody personJson execute ()
+      driver.lastRequest should have('method(POST), 'url(new URI("http://api.rest.org/person/")), 'body(Some(personJson)))
+
+      val id = "myid"
+      GET addPath id execute ()
+      driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/myid")))
+    }
+  }
+
+  /**
+   * These use-cases do not contain any asserts they are simply use to show
+   * the DSL supports various forms of syntax.  If they compile they work.
+   * The workings of the DSL are checked above, those tests verify that the
+   * functionality of the DSL works as expected, but are not as easy to read
+   * Each test starts with a use-case to verify the syntax which is then ported
+   * to a test above to verify the functionality. 
+   */
+  "Sample use-case" should "support a basic rest use case with a RequestBuilder" in {
     val personJson = """{ "name": "Jason" }"""
     val r1 = driver.execute(RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/"))
     val r2 = driver.execute(RequestBuilder().withMethod(POST).withUrl("http://api.rest.org/person/").withBody(personJson))
@@ -60,8 +146,21 @@ class DslTest extends FlatSpec with ShouldMatchers {
     val r2 = POST withUrl "http://api.rest.org/person/" withBody personJson execute ()
     val id = r2.headers.get("X-Person-Id").get.head
     val r3 = GET withUrl "http://api.rest.org/person/" addPath id execute ()
-    val r4 = GET withUrl "http://api.rest.org/person/" execute ()
+    val r4 = GET withUrl "http://api.rest.org/person/" execute
     val r5 = DELETE withUrl "http://api.rest.org/person/" addPath id execute ()
     val r6 = GET withUrl "http://api.rest.org/person/" execute ()
+  }
+
+  it should "support abstracting common values with codeblocks" in {
+    val personJson = """{ "name": "Jason" }"""
+    withUrl("http://api.rest.org/person/") apply { implicit rb =>
+      val r1 = GET execute ()
+      val r2 = POST withBody personJson execute ()
+      val id = r2.headers("X-Person-Id").head
+      val r3 = GET addPath id execute ()
+      val r4 = GET execute ()
+      val r5 = DELETE addPath id execute ()
+      val r6 = GET execute ()
+    }
   }
 }
