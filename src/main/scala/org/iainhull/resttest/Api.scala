@@ -69,7 +69,7 @@ object Api {
       val slash = if (s.endsWith("/")) "" else "/"
       copy(url = Some(new URI(s + slash + path)))
     }
-    def addHeaders(hs: Seq[(String, String)]) = copy(headers = headers ++ hs)
+    def addHeaders(hs: (String, String)*) = copy(headers = headers ++ hs)
 
     def toRequest: Request = {
       Request(method.get, url.get, toHeaders(headers: _*), body)
@@ -80,8 +80,8 @@ object Api {
   object RequestBuilder {
     implicit val emptyBuilder = RequestBuilder(None, None, Seq(), Seq(), None)
 
-    def apply(): RequestBuilder = {
-      emptyBuilder
+    def apply()(implicit builder: RequestBuilder): RequestBuilder = {
+      builder
     }
   }
 

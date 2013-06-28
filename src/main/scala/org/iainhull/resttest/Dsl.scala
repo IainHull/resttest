@@ -18,9 +18,4 @@ object Dsl {
       proc(builder)
     }
   }
-
-  def withUrl(url: String)(implicit builder: RequestBuilder): RequestBuilder = builder.withUrl(url)
-  def withBody(body: String)(implicit builder: RequestBuilder): RequestBuilder = builder.withBody(body)
-  def addPath(path: String)(implicit builder: RequestBuilder): RequestBuilder = builder.addPath(path)
-  def addHeaders(hs: Seq[(String, String)])(implicit builder: RequestBuilder) = builder.addHeaders(hs)
 }

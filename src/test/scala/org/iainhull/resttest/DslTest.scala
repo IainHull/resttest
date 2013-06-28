@@ -85,7 +85,7 @@ class DslTest extends FlatSpec with ShouldMatchers {
 
   it should "support abstracting common values with codeblocks" in {
     val personJson = """{ "name": "Jason" }"""
-    withUrl("http://api.rest.org/person/") apply { implicit rb =>
+    RequestBuilder() withUrl "http://api.rest.org/person/" apply { implicit rb =>
       GET execute ()
       driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
 
@@ -97,7 +97,18 @@ class DslTest extends FlatSpec with ShouldMatchers {
       driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/myid")))
     }
   }
+  
+  it should "support abstracting common values with nested codeblocks" in {
+    val personJson = """{ "name": "Jason" }"""
+    RequestBuilder() withUrl "http://api.rest.org/person/" apply { implicit rb =>
+      RequestBuilder() addHeaders("X-Custom-Header" -> "foo") apply { implicit rb=>
+        GET execute ()
+        driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")), 'header(toHeaders("X-Custom-Header" -> "foo")))
+      }
+    }
+  }
 
+      
   /**
    * These use-cases do not contain any asserts they are simply use to show
    * the DSL supports various forms of syntax.  If they compile they work.
@@ -153,7 +164,7 @@ class DslTest extends FlatSpec with ShouldMatchers {
 
   it should "support abstracting common values with codeblocks" in {
     val personJson = """{ "name": "Jason" }"""
-    withUrl("http://api.rest.org/person/") apply { implicit rb =>
+    RequestBuilder() withUrl "http://api.rest.org/person/" apply { implicit rb =>
       val r1 = GET execute ()
       val r2 = POST withBody personJson execute ()
       val id = r2.headers("X-Person-Id").head

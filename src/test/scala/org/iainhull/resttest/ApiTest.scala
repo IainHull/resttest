@@ -26,7 +26,7 @@ class ApiTest extends FlatSpec with ShouldMatchers {
     val personJson = """{ "name": "Jason" }"""
     val r1 = driver.execute(Request(GET, new URI("http://api.rest.org/person/"), Map(), None))
     val r2 = driver.execute(Request(POST, new URI("http://api.rest.org/person/"), Map(), Some(personJson)))
-    val id = r2.headers.get("X-Person-Id").get.head
+    val id = r2.headers("X-Person-Id").head
     val r3 = driver.execute(Request(GET, new URI("http://api.rest.org/person/" + id), Map(), None))
     val r4 = driver.execute(Request(GET, new URI("http://api.rest.org/person/"), Map(), None))
     val r5 = driver.execute(Request(DELETE, new URI("http://api.rest.org/person/" + id), Map(), None))
