@@ -27,10 +27,14 @@ object Api {
   def toQueryString(qs: (String, String)*): String = {
     def urlEncodeUTF8(s: String): String = URLEncoder.encode(s, "UTF-8")
 
-    qs map {
-      case (name, value) =>
-        urlEncodeUTF8(name) + "=" + urlEncodeUTF8(value)
-    } mkString ("&")
+    if (!qs.isEmpty) {
+      qs map {
+        case (name, value) =>
+          urlEncodeUTF8(name) + "=" + urlEncodeUTF8(value)
+      } mkString ("?", "&", "")
+    } else {
+      ""
+    }
   }
 
   /**
@@ -59,6 +63,7 @@ object Api {
     url: Option[URI],
     query: Seq[(String, String)],
     headers: Seq[(String, String)],
+    queryParams: Seq[(String, String)],
     body: Option[String]) {
 
     def withMethod(method: Method): RequestBuilder = copy(method = Some(method))
@@ -70,15 +75,17 @@ object Api {
       copy(url = Some(new URI(s + slash + path)))
     }
     def addHeaders(hs: (String, String)*) = copy(headers = headers ++ hs)
+    def addQuery(qs: (String, String)*) = copy(queryParams = queryParams ++ qs)
 
     def toRequest: Request = {
-      Request(method.get, url.get, toHeaders(headers: _*), body)
+      val fullUrl = new URI(url.get + toQueryString(queryParams: _*))
+      Request(method.get, fullUrl, toHeaders(headers: _*), body)
     }
 
   }
 
   object RequestBuilder {
-    implicit val emptyBuilder = RequestBuilder(None, None, Seq(), Seq(), None)
+    implicit val emptyBuilder = RequestBuilder(None, None, Seq(), Seq(), Seq(), None)
 
     def apply()(implicit builder: RequestBuilder): RequestBuilder = {
       builder

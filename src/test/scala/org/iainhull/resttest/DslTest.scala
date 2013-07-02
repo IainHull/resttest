@@ -97,25 +97,30 @@ class DslTest extends FlatSpec with ShouldMatchers {
       driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/myid")))
     }
   }
-  
+
   it should "support abstracting common values with nested codeblocks" in {
-    val personJson = """{ "name": "Jason" }"""
     RequestBuilder() withUrl "http://api.rest.org/person/" apply { implicit rb =>
-      RequestBuilder() addHeaders("X-Custom-Header" -> "foo") apply { implicit rb=>
+      RequestBuilder() addHeaders ("X-Custom-Header" -> "foo") apply { implicit rb =>
         GET execute ()
-        driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")), 'header(toHeaders("X-Custom-Header" -> "foo")))
+        driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")), 'headers(toHeaders("X-Custom-Header" -> "foo")))
       }
     }
   }
 
-      
+  it should "support abstracting common values with codeblocks and method aliases" in {
+    RequestBuilder() url "http://api.rest.org/" apply { implicit rb =>
+      GET / 'person :? ('page -> 2, 'per_page -> 100) execute ()
+        driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person?page=2&per_page=100")))
+    }
+  }
+
   /**
    * These use-cases do not contain any asserts they are simply use to show
    * the DSL supports various forms of syntax.  If they compile they work.
    * The workings of the DSL are checked above, those tests verify that the
    * functionality of the DSL works as expected, but are not as easy to read
    * Each test starts with a use-case to verify the syntax which is then ported
-   * to a test above to verify the functionality. 
+   * to a test above to verify the functionality.
    */
   "Sample use-case" should "support a basic rest use case with a RequestBuilder" in {
     val personJson = """{ "name": "Jason" }"""
@@ -172,6 +177,19 @@ class DslTest extends FlatSpec with ShouldMatchers {
       val r4 = GET execute ()
       val r5 = DELETE addPath id execute ()
       val r6 = GET execute ()
+    }
+  }
+
+  it should "support abstracting common values with codeblocks and method aliases" in {
+    val personJson = """{ "name": "Jason" }"""
+    RequestBuilder() url "http://api.rest.org/" apply { implicit rb =>
+      val r1 = GET / 'person execute ()
+      val r2 = POST / 'person body personJson execute ()
+      val id = r2.headers("X-Person-Id").head
+      val r3 = GET / 'person / id execute ()
+      val r4 = GET / 'person execute ()
+      val r5 = DELETE / 'person / id execute ()
+      val r6 = GET / 'person :? ('page -> 2, 'per_page -> 100) execute ()
     }
   }
 }
