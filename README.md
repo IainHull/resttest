@@ -4,7 +4,7 @@ A lightweight Scala DSL for system testing REST web services
 
 ## Example
 
-{% highlight scala %}
+```scala
 RequestBuilder() url "http://api.rest.org/person" apply { implicit rb =>
   GET asserting (statusCode is Status.OK, jsonBodyAsList[Person] is EmptyList)
   val id = POST body personJson asserting (statusCode is Status.Created) returning (header("X-Person-Id"))
@@ -14,7 +14,7 @@ RequestBuilder() url "http://api.rest.org/person" apply { implicit rb =>
   GET / id asserting (statusCode is Status.NotFound)
   GET asserting (statusCode is Status.OK, jsonBodyAsList[Person] is EmptyList)
 }
-{% endhighlight %}
+```
 
 ## The Plan
 
