@@ -8,7 +8,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class ApiTest extends FlatSpec with ShouldMatchers {
+class ApiSpec extends FlatSpec with ShouldMatchers {
   import Api._
 
   val driver = new Driver {

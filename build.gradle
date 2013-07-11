@@ -4,17 +4,31 @@ apply plugin: 'eclipse'
 sourceCompatibility=1.7
 targetCompatibility=1.7
 
+ext {
+    scalaVersion = "2.10"
+}
+
+
 repositories {
     mavenCentral()
+
+    maven {
+        url "https://github.com/mandubian/mandubian-mvn/raw/master/snapshots"
+    }
 }
 
 dependencies {
-    scalaTools "org.scala-lang:scala-compiler:2.10.0"
+    scalaTools "org.scala-lang:scala-compiler:${scalaVersion}.0"
     
-    compile "org.scala-lang:scala-library:2.10.0"
+    compile "org.scala-lang:scala-library:${scalaVersion}.0"
     compile "com.sun.jersey:jersey-core:1.+"
     compile "com.sun.jersey:jersey-client:1.+"
-    compile "org.scalatest:scalatest_2.10:1.9.1"
+    compile "org.scalatest:scalatest_${scalaVersion}:1.9.1"
+    
+//   	compile "com.fasterxml.jackson.module:jackson-module-scala_${scalaVersion}:2.+"
+//   	compile "com.fasterxml.jackson.module:jackson-module-scala_${scalaVersion}:2.+"
+   	compile "play:play-json_${scalaVersion}:2.2-SNAPSHOT"
+    
     
     testCompile "junit:junit:4.+"
 }

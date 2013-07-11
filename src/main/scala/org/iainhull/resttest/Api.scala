@@ -78,7 +78,7 @@ object Api {
     def addQuery(qs: (String, String)*) = copy(queryParams = queryParams ++ qs)
 
     def toRequest: Request = {
-      val fullUrl = new URI(url.get + toQueryString(queryParams: _*))
+      val fullUrl = URI.create(url.get + toQueryString(queryParams: _*))
       Request(method.get, fullUrl, toHeaders(headers: _*), body)
     }
 
