@@ -5,6 +5,10 @@ A lightweight Scala DSL for system testing REST web services
 ## Example
 
 ```scala
+val Jason: Person = ???
+val personJson = Json.stringify(Jason)
+val EmptyList = List[Person]()
+
 RequestBuilder() url "http://api.rest.org/person" apply { implicit rb =>
   GET asserting (statusCode is Status.OK, jsonBodyAsList[Person] is EmptyList)
   val id = POST body personJson asserting (statusCode is Status.Created) returning (header("X-Person-Id"))
@@ -24,7 +28,7 @@ You can follow the [progress on my blog](http://iainhull.github.io/tags.html#res
 
 * [The Builder Pattern](http://iainhull.github.io/2013/07/01/a-simple-rest-dsl-part-1/)
 * [The Builder as the basis for a DSL](http://iainhull.github.io/2013/07/02/a-simple-rest-dsl-part-2/)
-* Returning values (in progress)
+* [Extracting and asserting on response values](http://iainhull.github.io/2013/07/14/a-simple-rest-dsl-part-3/)
 * Integrating RestTest with ScalaTest (planned)
 * How to document a DLS (planned)
 * Summary of Scala techniques and resources for creating DSLs (planned)

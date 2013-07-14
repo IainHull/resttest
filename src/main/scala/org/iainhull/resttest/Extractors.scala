@@ -11,11 +11,7 @@ trait Extractors {
 
   def bodyOption: Extractor[Option[String]] = _.body
   
-  def header(name: String): Extractor[String] = { res =>
-  	res.headers(name).mkString(",")
-  }
+  def header(name: String): Extractor[String] = _.headers(name).mkString(",")
 
-  def headerList(name: String): Extractor[List[String]] = { res =>
-  	res.headers(name)
-  }
+  def headerList(name: String): Extractor[List[String]] = _.headers(name)
 }
