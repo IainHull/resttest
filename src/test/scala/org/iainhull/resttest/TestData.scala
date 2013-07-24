@@ -63,8 +63,9 @@ object TestData {
     (__ \ "name").read[String] and
     (__ \ "age").read[Int] and
     (__ \ "email").read[String])(Person)
-    
-   def newTestDriver =  new Driver {
+   
+   
+   class TestDriver extends Driver {
     val defaultResponse = Response(200, Map("X-Person-Id" -> List("1234")), Some("body"))
     var responses = List[Response]()
     var requests = List[Request]()
@@ -84,4 +85,6 @@ object TestData {
       }
     }
   }
+  
+  def newTestDriver = new TestDriver
 }

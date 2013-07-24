@@ -3,6 +3,7 @@ package org.iainhull.resttest
 import java.net.URI
 
 object Dsl extends Extractors {
+  import language.implicitConversions
   import Api._
 
   implicit def toRequest(builder: RequestBuilder): Request = builder.toRequest
@@ -35,6 +36,10 @@ object Dsl extends Extractors {
     }
   }
 
+  def using(config: RequestBuilder => RequestBuilder)(process: RequestBuilder => Unit)(implicit builder: RequestBuilder): Unit = {
+    process(config(builder))
+  }
+  
   implicit class RichResponse(response: Response) {
     def returning[T1](func1: Extractor[T1])(implicit driver: Driver): T1 = {
       func1(response)

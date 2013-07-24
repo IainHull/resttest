@@ -167,7 +167,7 @@ class DslSpec extends FlatSpec with ShouldMatchers {
     val r2 = POST withUrl "http://api.rest.org/person/" withBody personJson execute ()
     val id = r2.headers.get("X-Person-Id").get.head
     val r3 = GET withUrl "http://api.rest.org/person/" addPath id execute ()
-    val r4 = GET withUrl "http://api.rest.org/person/" execute
+    val r4 = GET withUrl "http://api.rest.org/person/" execute ()
     val r5 = DELETE withUrl "http://api.rest.org/person/" addPath id execute ()
     val r6 = GET withUrl "http://api.rest.org/person/" execute ()
   }
@@ -234,6 +234,31 @@ class DslSpec extends FlatSpec with ShouldMatchers {
       Nil
 
     RequestBuilder() url "http://api.rest.org/person" apply { implicit rb =>
+      GET asserting (statusCode is Status.OK, jsonBodyAsList[Person] is EmptyList)
+      val id = POST body personJson asserting (statusCode is Status.Created) returning (header("X-Person-Id"))
+      GET / id asserting (statusCode is Status.OK, jsonBodyAs[Person] is Jason)
+      GET asserting (statusCode is Status.OK, jsonBodyAsList[Person] is Seq(Jason))
+      DELETE / id asserting (statusCode is Status.OK)
+      GET / id asserting (statusCode is Status.NotFound)
+      GET asserting (statusCode is Status.OK, jsonBodyAsList[Person] is EmptyList)
+    }
+  }
+    
+    
+  it should "support asserting on values from the response" in {
+    import JsonExtractors._
+    val EmptyList = Seq()
+
+    driver.responses = Response(Status.OK, Map(), Some("[]")) ::
+      Response(Status.Created, toHeaders("X-Person-Id" -> "99"), None) ::
+      Response(Status.OK, Map(), Some(personJson)) ::
+      Response(Status.OK, Map(), Some("[" + personJson + "]")) ::
+      Response(Status.OK, Map(), None) ::
+      Response(Status.NotFound, Map(), None) ::
+      Response(Status.OK, Map(), Some("[]")) ::
+      Nil
+
+    using (_ url "http://api.rest.org/person") { implicit rb =>
       GET asserting (statusCode is Status.OK, jsonBodyAsList[Person] is EmptyList)
       val id = POST body personJson asserting (statusCode is Status.Created) returning (header("X-Person-Id"))
       GET / id asserting (statusCode is Status.OK, jsonBodyAs[Person] is Jason)
