@@ -3,18 +3,46 @@ package org.iainhull.resttest
 import java.net.URI
 import java.net.URLEncoder
 
+/**
+ * Provides the main api for creating and sending REST Web service requests.  
+ * 
+ * {{{
+ * val request = Request(GET, new URI("http://api.rest.org/person", Map(), None))
+ * val response = driver.execute(request)
+ * response.statusCode should be(Status.OK)
+ * response.body match {
+ *   Some(body) => objectMapper.readValue[List[Person]](body) should have length(0)
+ *   None => fail("Expected a body"))
+ * }
+ * }}}
+ * 
+ * or using the [[RequestBuilder]]
+ * {{{
+ * val request = driver.execute(RequestBuilder().withUrl("http://api.rest.org/person/").withMethod(GET))
+ * }}}
+ * 
+ * This provides the basic interface used to implement the [[Dsl]], users 
+ * are expected to use the Dsl. 
+ */
 object Api {
-  /** The Method is the entry point start the base url */
+  /** The HTTP Methods used to make a request */
   sealed abstract class Method(name: String)
-
   case object GET extends Method("GET")
   case object POST extends Method("POST")
   case object PUT extends Method("PUT")
   case object DELETE extends Method("DELETE")
 
+  /** The HTTP Request */
   case class Request(method: Method, url: URI, headers: Map[String, List[String]] = Map(), body: Option[String] = None)
+  
+  /** The HTTP Response */
   case class Response(statusCode: Int, headers: Map[String, List[String]], body: Option[String])
 
+  /**
+   * Convert a sequence of `(name, value)` tuples into a map of headers.
+   * Each tuple creates an entry in the map, duplicate `name`s add the
+   * `value` to the list. 
+   */
   def toHeaders(hs: (String, String)*): Map[String, List[String]] = {
     hs.foldRight(Map[String, List[String]]()) {
       case ((name, value), hm) =>
@@ -91,5 +119,4 @@ object Api {
       builder
     }
   }
-
 }

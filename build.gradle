@@ -13,22 +13,18 @@ repositories {
     mavenCentral()
 
     maven {
+        // See http://mandubian.com/2013/02/21/play-json-stand-alone/
         url "https://github.com/mandubian/mandubian-mvn/raw/master/snapshots"
     }
 }
 
-dependencies {
-    scalaTools "org.scala-lang:scala-compiler:${scalaVersion}.0"
-    
+dependencies {    
     compile "org.scala-lang:scala-library:${scalaVersion}.0"
     compile "com.sun.jersey:jersey-core:1.+"
     compile "com.sun.jersey:jersey-client:1.+"
     compile "org.scalatest:scalatest_${scalaVersion}:1.9.1"
     
-//   	compile "com.fasterxml.jackson.module:jackson-module-scala_${scalaVersion}:2.+"
-//   	compile "com.fasterxml.jackson.module:jackson-module-scala_${scalaVersion}:2.+"
-   	compile "play:play-json_${scalaVersion}:2.2-SNAPSHOT"
-    
+   	compile "play:play-json_${scalaVersion}:2.2-SNAPSHOT"    
     
     testCompile "junit:junit:4.+"
 }
@@ -41,3 +37,11 @@ tasks.withType(ScalaCompile) {
 task showCompileClasspath << {
    sourceSets.main.compileClasspath.each { println it }
 }
+
+
+// Enable Scala console, Use:
+// TERM=dumb gradle scalaConsole
+scalaConsole.dependsOn(classes)
+scalaConsole.classpath += sourceSets.main.output
+scalaTestConsole.dependsOn(test)
+scalaTestConsole.classpath += sourceSets.test.output

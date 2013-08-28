@@ -122,6 +122,19 @@ class DslSpec extends FlatSpec with ShouldMatchers {
       e should have('message("200 != 201"))
     }
   }
+  
+  it should "support 'using' function to abstract common parameters in a readable way" in {
+    import JsonExtractors._
+    using (_ url "http://api.rest.org/person/") { implicit rb =>
+      GET asserting (statusCode is Status.OK)
+      driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
+
+      val e = evaluating { GET asserting (statusCode is Status.Created) } should produce[AssertionError]
+      driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
+      e should have('message("200 != 201"))
+    }
+  }
+
 
   /**
    * These use-cases do not contain any asserts they are simply use to show
@@ -245,7 +258,7 @@ class DslSpec extends FlatSpec with ShouldMatchers {
   }
     
     
-  it should "support asserting on values from the response" in {
+  it should "support 'using' function to abstract common parameters in a readable way" in {
     import JsonExtractors._
     val EmptyList = Seq()
 

@@ -9,9 +9,9 @@ import play.api.libs.functional.syntax._
 
 @RunWith(classOf[JUnitRunner])
 class JsonExtractorsSpec extends FlatSpec with ShouldMatchers {
+  import Api._
   import JsonExtractors._
   import TestData._
-  import Api._
 
   "jsonToList" should "deserialise to scala types" in {
     jsonToList[String](jsonList, __ \\ "name") should be(List("toto", "tata"))

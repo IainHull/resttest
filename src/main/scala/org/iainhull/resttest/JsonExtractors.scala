@@ -7,7 +7,8 @@ import play.api.libs.json.JsArray
 import play.api.libs.json.Json
 import org.iainhull.resttest.Api.Response
 
-trait JsonExtractors extends Extractors {
+trait JsonExtractors extends Extractors { 
+  import Api._
   /**
    * Extract a path from a json document and deserialise it to a List
    */
@@ -55,4 +56,4 @@ trait JsonExtractors extends Extractors {
   def jsonBodyAsList[T: Reads](path: JsPath = JsPath): Extractor[Seq[T]] = jsonBody andThen (jsonToList(_, path))
 }
 
-object JsonExtractors extends JsonExtractors
+object JsonExtractors extends JsonExtractors with Dsl
