@@ -41,20 +41,20 @@ object Dsl extends Extractors {
   }
   
   implicit class RichResponse(response: Response) {
-    def returning[T1](func1: Extractor[T1])(implicit driver: Driver): T1 = {
-      func1(response)
+    def returning[T1](ext1: Extractor[T1])(implicit driver: Driver): T1 = {
+      ext1.op(response)
     }
 
-    def returning[T1, T2](func1: Extractor[T1], func2: Extractor[T2]): (T1, T2) = {
-      (func1(response), func2(response))
+    def returning[T1, T2](ext1: Extractor[T1], ext2: Extractor[T2]): (T1, T2) = {
+      (ext1.op(response), ext2.op(response))
     }
 
-    def returning[T1, T2, T3](func1: Extractor[T1], func2: Extractor[T2], func3: Extractor[T3]): (T1, T2, T3) = {
-      (func1(response), func2(response), func3(response))
+    def returning[T1, T2, T3](ext1: Extractor[T1], ext2: Extractor[T2], ext3: Extractor[T3]): (T1, T2, T3) = {
+      (ext1.op(response), ext2.op(response), ext3.op(response))
     }
 
-    def returning[T1, T2, T3, T4](func1: Extractor[T1], func2: Extractor[T2], func3: Extractor[T3], func4: Extractor[T4]): (T1, T2, T3, T4) = {
-      (func1(response), func2(response), func3(response), func4(response))
+    def returning[T1, T2, T3, T4](ext1: Extractor[T1], ext2: Extractor[T2], ext3: Extractor[T3], ext4: Extractor[T4]): (T1, T2, T3, T4) = {
+      (ext1.op(response), ext2.op(response), ext3.op(response), ext4.op(response))
     }
   }
   
@@ -62,23 +62,23 @@ object Dsl extends Extractors {
   implicit def methodToRichResponse(method: Method)(implicit builder: RequestBuilder, driver: Driver): RichResponse = new RichResponse(builder.withMethod(method).execute())
 
 
-  implicit class RichExtractor[T](func: Extractor[T]) {
+  implicit class RichExtractor[T](ext: Extractor[T]) {
     def is(expected: T): Assertion = new Assertion {
       override def verify(res: Response): Unit = {
-        val actual = func(res)
+        val actual = ext.op(res)
         if (actual != expected) throw new AssertionError(actual + " != " + expected)
       }
     }
 
     def isNot(expected: T): Assertion = new Assertion {
       override def verify(res: Response): Unit = {
-        val actual = func(res)
+        val actual = ext.op(res)
         if (actual == expected) throw new AssertionError(actual + " == " + expected)
       }
     }
     def isIn(expectedVals: T*): Assertion = new Assertion {
       override def verify(res: Response): Unit = {
-        val actual = func(res)
+        val actual = ext.op(res)
         if (!expectedVals.contains(actual)) throw new AssertionError(actual + " not in " + expectedVals)
       }
     }

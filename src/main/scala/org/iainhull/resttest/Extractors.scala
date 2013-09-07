@@ -1,17 +1,21 @@
 package org.iainhull.resttest
 
+import Api._
+  
+case class Extractor[+T](name: String, op: Response => T)
+  
 trait Extractors {
-  import Api._
+  import language.implicitConversions
   
-  type Extractor[T] = Response => T
+  val statusCode = Extractor[Int]("statusCode", _.statusCode)
+
+  val body = Extractor[Option[String]]("bodyOption", _.body)
+
+  val bodyText = Extractor[String]("body", _.body.get)
   
-  def statusCode: Extractor[Int] = _.statusCode
+  def headerText(name: String) = Extractor[String]("header("+name+")", _.headers(name).mkString(","))
 
-  def body: Extractor[String] = _.body.get
+  def headerList(name: String) = Extractor[List[String]]("headerList("+name+")", _.headers(name))
 
-  def bodyOption: Extractor[Option[String]] = _.body
-  
-  def header(name: String): Extractor[String] = _.headers(name).mkString(",")
-
-  def headerList(name: String): Extractor[List[String]] = _.headers(name)
+  def header(name: String) = Extractor[Option[List[String]]]("headerOption("+name+")", _.headers.get(name))
 }

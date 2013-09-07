@@ -5,9 +5,11 @@ import play.api.libs.json.JsPath
 import play.api.libs.json.Reads
 import play.api.libs.json.JsArray
 import play.api.libs.json.Json
-import org.iainhull.resttest.Api.Response
 
-trait JsonExtractors extends Extractors {
+trait JsonExtractors {
+  import Api._
+  import Dsl._
+  
   /**
    * Extract a path from a json document and deserialise it to a List
    */
@@ -28,7 +30,7 @@ trait JsonExtractors extends Extractors {
   /**
    * Extract the response body as a json document
    */
-  val jsonBody: Extractor[JsValue] = body andThen Json.parse
+  val jsonBody = Extractor[JsValue]("jsonBody", bodyText.op andThen Json.parse)
 
   /**
    * Extract the response body as an object.
@@ -40,7 +42,7 @@ trait JsonExtractors extends Extractors {
    *
    * @param path the path for the portion of the response to use
    */
-  def jsonBodyAs[T: Reads](path: JsPath = JsPath): Extractor[T] = jsonBody andThen (jsonToValue(_, path))
+  def jsonBodyAs[T: Reads](path: JsPath = JsPath) = Extractor[T]("jsonBodyAs", jsonBody.op andThen (jsonToValue(_, path)))
 
   /**
    * Extract the response body as a List of objects.
@@ -52,7 +54,7 @@ trait JsonExtractors extends Extractors {
    *
    * @param path the path for the portion of the response to use
    */
-  def jsonBodyAsList[T: Reads](path: JsPath = JsPath): Extractor[Seq[T]] = jsonBody andThen (jsonToList(_, path))
+  def jsonBodyAsList[T: Reads](path: JsPath = JsPath) = Extractor[Seq[T]]("jsonBodyAsList", jsonBody.op andThen (jsonToList(_, path)))
 }
 
 object JsonExtractors extends JsonExtractors
