@@ -10,6 +10,7 @@ import play.api.libs.functional.syntax._
 @RunWith(classOf[JUnitRunner])
 class JsonExtractorsSpec extends FlatSpec with ShouldMatchers {
   import Api._
+  import Dsl._
   import JsonExtractors._
   import TestData._
 
@@ -35,7 +36,7 @@ class JsonExtractorsSpec extends FlatSpec with ShouldMatchers {
     jsonToValue[Person](jsonDoc, __ \ "user") should be(Toto)
   }
 
-  def evaluate[T](func: Extractor[T], json: JsValue): T = func(Response(Status.OK, Map(), Some(Json.stringify(json))))
+  def evaluate[T](ext: Extractor[T], json: JsValue): T = ext.op(Response(Status.OK, Map(), Some(Json.stringify(json))))
 
   
   "jsonBodyAsList" should "deserialise to scala types" in {

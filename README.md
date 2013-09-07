@@ -9,7 +9,7 @@ val Jason: Person = ???
 val personJson = Json.stringify(Jason)
 val EmptyList = List[Person]()
 
-RequestBuilder() url "http://api.rest.org/person" apply { implicit rb =>
+using(_ url "http://api.rest.org/person") { implicit rb =>
   GET asserting (statusCode is Status.OK, jsonBodyAsList[Person] is EmptyList)
   val id = POST body personJson asserting (statusCode is Status.Created) returning (header("X-Person-Id"))
   GET / id asserting (statusCode is Status.OK, jsonBodyAs[Person] is Jason)
@@ -31,8 +31,20 @@ You can follow the [progress on my blog](http://iainhull.github.io/tags.html#res
 * [Extracting and asserting on response values](http://iainhull.github.io/2013/07/14/a-simple-rest-dsl-part-3/)
 * Integrating RestTest with ScalaTest (planned)
 * How to document a DLS (planned)
+* How to structure DLS projects (planned)
 * Summary of Scala techniques and resources for creating DSLs (planned)
 
+## How to build
+
+This project is built with [gradle](http://www.gradle.org/).  It includes the gradle wrapper which will download gradle and build the project for you (the only prereq is Java).
+
+To download and build RestTest just:
+
+```
+git clone git@github.com:IainHull/resttest.git
+cd resttest
+./gradlew build
+```
 
 ## License
 

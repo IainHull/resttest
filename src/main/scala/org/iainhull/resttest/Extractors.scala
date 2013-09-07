@@ -1,5 +1,7 @@
 package org.iainhull.resttest
 
+import Api._
+
 /**
  * An [[Extractor]] is simply a function that takes a [[Api.Response]] and returns a 
  * value.  They can be used with the [[Dsl.RichResponse]]`.returning` methods to access the 
@@ -21,18 +23,21 @@ package org.iainhull.resttest
  * def headerList(name: String): Extractor[List[String]] = _.headers(name)
  * }}}
  */
+case class Extractor[+T](name: String, op: Response => T)
+
 trait Extractors { 
-  import Api._
+  import language.implicitConversions
   
-  type Extractor[T] = Response => T
   
-  val statusCode: Extractor[Int] = _.statusCode
+  val statusCode = Extractor[Int]("statusCode", _.statusCode)
 
-  val body: Extractor[String] = _.body.get
+  val body = Extractor[Option[String]]("bodyOption", _.body)
 
-  val bodyOption: Extractor[Option[String]] = _.body
+  val bodyText = Extractor[String]("body", _.body.get)
   
-  def header(name: String): Extractor[String] = _.headers(name).mkString(",")
+  def headerText(name: String) = Extractor[String]("header("+name+")", _.headers(name).mkString(","))
 
-  def headerList(name: String): Extractor[List[String]] = _.headers(name)
+  def headerList(name: String) = Extractor[List[String]]("headerList("+name+")", _.headers(name))
+
+  def header(name: String) = Extractor[Option[List[String]]]("headerOption("+name+")", _.headers.get(name))
 }

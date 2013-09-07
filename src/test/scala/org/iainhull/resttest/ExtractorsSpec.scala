@@ -12,25 +12,36 @@ class ExtractorsSpec extends FlatSpec with ShouldMatchers {
   
   val response = Response(Status.OK, toHeaders("SimpleHeader" -> "SimpleValue", "MultiHeader" -> "Value1", "MultiHeader" -> "Value2"), Some("body"))
   
-  def returning[T](func: Extractor[T]): T = func(response)
+  def returning[T](ext: Extractor[T]): T = ext.op(response)
   
   "statusCode" should "return the responses statusCode" in {
     returning(statusCode) should be(Status.OK)
   }
 
-  "body" should "return the responses body as a String" in {
-    returning(body) should be("body")
+  "body" should "return the responses body as a Option[String]" in {
+    returning(body) should be(Some("body"))
+  }
+
+  "bodyText" should "return the responses body as a String" in {
+    returning(bodyText) should be("body")
   }
 
   "bodyOption" should "return the responses body as an Option" in {
-    returning(bodyOption) should be(Option("body"))
+    returning(body) should be(Option("body"))
   }
 
-  "header" should "return the responses header value as a String" in {
-    returning(header("SimpleHeader")) should be("SimpleValue")
-    returning(header("MultiHeader")) should be("Value1,Value2")
+  "header" should "return the responses header value as an Option[List[String]]" in {
+    returning(header("SimpleHeader")) should be(Some(List("SimpleValue")))
+    returning(header("MultiHeader")) should be(Some(List("Value1","Value2")))
     
-    evaluating { returning(header("NotAHeader")) } should produce [NoSuchElementException]
+    returning(header("NotAHeader")) should be(None)
+  }
+
+  "headerText" should "return the responses header value as a String" in {
+    returning(headerText("SimpleHeader")) should be("SimpleValue")
+    returning(headerText("MultiHeader")) should be("Value1,Value2")
+    
+    evaluating { returning(headerText("NotAHeader")) } should produce [NoSuchElementException]
   }
 
   "headerList" should "return the responses header as a list" in {

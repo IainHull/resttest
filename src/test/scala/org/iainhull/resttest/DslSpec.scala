@@ -105,7 +105,7 @@ class DslSpec extends FlatSpec with ShouldMatchers {
 
   it should "support returning values from the response" in {
     RequestBuilder() withUrl "http://api.rest.org/person/" apply { implicit rb =>
-      val (c1, b1) = GET returning (statusCode, body)
+      val (c1, b1) = GET returning (statusCode, bodyText)
       driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
       c1 should be(Status.OK)
       b1 should be("body")
@@ -225,7 +225,7 @@ class DslSpec extends FlatSpec with ShouldMatchers {
   it should "support returning values from the response" in {
     RequestBuilder() url "http://api.rest.org/person/" apply { implicit rb =>
       val (c1, b1) = GET returning (statusCode, body)
-      val (c2, id) = POST body personJson returning (statusCode, header("X-Person-Id"))
+      val (c2, id) = POST body personJson returning (statusCode, headerText("X-Person-Id"))
       val (c3, b3) = GET / id returning (statusCode, body)
       val (c4, b4) = GET returning (statusCode, body)
       val c5 = DELETE / id returning statusCode
@@ -248,7 +248,7 @@ class DslSpec extends FlatSpec with ShouldMatchers {
 
     RequestBuilder() url "http://api.rest.org/person" apply { implicit rb =>
       GET asserting (statusCode is Status.OK, jsonBodyAsList[Person] is EmptyList)
-      val id = POST body personJson asserting (statusCode is Status.Created) returning (header("X-Person-Id"))
+      val id = POST body personJson asserting (statusCode is Status.Created) returning (headerText("X-Person-Id"))
       GET / id asserting (statusCode is Status.OK, jsonBodyAs[Person] is Jason)
       GET asserting (statusCode is Status.OK, jsonBodyAsList[Person] is Seq(Jason))
       DELETE / id asserting (statusCode is Status.OK)
@@ -256,7 +256,6 @@ class DslSpec extends FlatSpec with ShouldMatchers {
       GET asserting (statusCode is Status.OK, jsonBodyAsList[Person] is EmptyList)
     }
   }
-    
     
   it should "support 'using' function to abstract common parameters in a readable way" in {
     import JsonExtractors._
@@ -281,5 +280,4 @@ class DslSpec extends FlatSpec with ShouldMatchers {
       GET asserting (statusCode is Status.OK, jsonBodyAsList[Person] is EmptyList)
     }
   }
-
 }
