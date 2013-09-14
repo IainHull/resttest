@@ -46,6 +46,12 @@ cd resttest
 ./gradlew build
 ```
 
+To create a fully configured eclipse project just:
+
+```
+./gradlew eclipse
+```
+
 ## License
 
 RestTest is licensed under the permissive [Apache 2 Open Source License](http://www.apache.org/licenses/LICENSE-2.0.txt).
