@@ -30,7 +30,7 @@ trait JsonExtractors {
   /**
    * Extract the response body as a json document
    */
-  val jsonBody = Extractor[JsValue]("jsonBody", bodyText.op andThen Json.parse)
+  val jsonBody = Extractor[JsValue]("jsonBody", BodyText.op andThen Json.parse)
 
   /**
    * Extract the response body as an object.

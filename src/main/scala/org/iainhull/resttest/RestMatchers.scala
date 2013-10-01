@@ -3,6 +3,7 @@ package org.iainhull.resttest
 import org.scalatest.matchers.ShouldMatchers.AnyRefShouldWrapper
 import org.scalatest.matchers.HavePropertyMatcher
 import org.scalatest.matchers.HavePropertyMatchResult
+import org.scalatest.matchers.ShouldMatchers.AnyShouldWrapper
 
 /**
  * Adds [[http://www.scalatest.org/ ScalaTest]] support to the RestTest [[Dsl]].
@@ -60,6 +61,12 @@ trait RestMatchers {
     requestBuilderToShouldWrapper(builder.withMethod(method))
   }
 
+
+  implicit def extractorToShouldWrapper[T](extractor: Extractor[T])(implicit response: Response): AnyShouldWrapper[T] = {
+    val v: T = extractor.op(response)
+    new AnyShouldWrapper[T](v)
+  }  
+  
   /**
    * Implicitly add operations to [[Extractor]] that create `HavePropertyMatcher`s.
    *

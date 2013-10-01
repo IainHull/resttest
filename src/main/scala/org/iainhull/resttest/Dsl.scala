@@ -34,12 +34,23 @@ object Dsl extends Extractors {
       assertions foreach (_.verify(res))
       res
     }
+
+    def expecting[T](func: Response => T)(implicit driver: Driver): T = {
+      val res = execute()
+      func(res)
+    }
+  }
+
+  object ~ {
+    def unapply(res: Response): Option[(Response, Response)] = {
+      Some((res, res))
+    }
   }
 
   def using(config: RequestBuilder => RequestBuilder)(process: RequestBuilder => Unit)(implicit builder: RequestBuilder): Unit = {
     process(config(builder))
   }
-  
+
   implicit class RichResponse(response: Response) {
     def returning[T1](ext1: Extractor[T1])(implicit driver: Driver): T1 = {
       ext1.op(response)
@@ -57,10 +68,9 @@ object Dsl extends Extractors {
       (ext1.op(response), ext2.op(response), ext3.op(response), ext4.op(response))
     }
   }
-  
+
   implicit def requestBuilderToRichResponse(builder: RequestBuilder)(implicit driver: Driver): RichResponse = new RichResponse(builder.execute())
   implicit def methodToRichResponse(method: Method)(implicit builder: RequestBuilder, driver: Driver): RichResponse = new RichResponse(builder.withMethod(method).execute())
-
 
   implicit class RichExtractor[T](ext: Extractor[T]) {
     def is(expected: T): Assertion = new Assertion {

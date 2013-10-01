@@ -15,19 +15,19 @@ class ExtractorsSpec extends FlatSpec with ShouldMatchers {
   def returning[T](ext: Extractor[T]): T = ext.op(response)
   
   "statusCode" should "return the responses statusCode" in {
-    returning(statusCode) should be(Status.OK)
+    returning(StatusCode) should be(Status.OK)
   }
 
   "body" should "return the responses body as a Option[String]" in {
-    returning(body) should be(Some("body"))
+    returning(Body) should be(Some("body"))
   }
 
   "bodyText" should "return the responses body as a String" in {
-    returning(bodyText) should be("body")
+    returning(BodyText) should be("body")
   }
 
   "bodyOption" should "return the responses body as an Option" in {
-    returning(body) should be(Option("body"))
+    returning(Body) should be(Option("body"))
   }
 
   "header" should "return the responses header value as an Option[List[String]]" in {
