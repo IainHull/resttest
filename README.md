@@ -29,6 +29,7 @@ You can follow the [progress on my blog](http://iainhull.github.io/tags.html#res
 * [The Builder Pattern](http://iainhull.github.io/2013/07/01/a-simple-rest-dsl-part-1/)
 * [The Builder as the basis for a DSL](http://iainhull.github.io/2013/07/02/a-simple-rest-dsl-part-2/)
 * [Extracting and asserting on response values](http://iainhull.github.io/2013/07/14/a-simple-rest-dsl-part-3/)
+* [Grouping common request configuration with the `using` method](http://iainhull.github.io/2013/07/14/a-simple-rest-dsl-part-4/)
 * Integrating RestTest with ScalaTest (planned)
 * How to document a DLS (planned)
 * How to structure DLS projects (planned)
