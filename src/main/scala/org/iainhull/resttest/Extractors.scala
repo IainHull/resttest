@@ -97,11 +97,11 @@ trait Extractors {
   import language.implicitConversions
   import Extractors._
 
-  val StatusCode = Extractor[Int]("statusCode", _.statusCode)
+  val StatusCode = Extractor[Int]("StatusCode", r => r.statusCode)
 
-  val Body = Extractor[Option[String]]("bodyOption", _.body)
+  val Body = Extractor[Option[String]]("bodyOption", r => r.body)
 
-  val BodyText = Extractor[String]("body", _.body.get)
+  val BodyText = Extractor[String]("body", r => r.body.get)
 
   /**
    * Enable Extractors to be chained together in case clauses.
@@ -109,13 +109,13 @@ trait Extractors {
    * For example:
    * {{{
    * GET / id expecting {
-   *   case StatusCode(Status.OK) ~ Header.ContentType(ct) ~ BodyAsPerson(person) =>
+   *   case StatusCode(Status.OK) & Header.ContentType(ct) & BodyAsPerson(person) =>
    *     ct should be("application/json")
    *     person should be(Jason)
    * }
    * }}}
    */
-  object ~ {
+  object & {
     def unapply(res: Response): Option[(Response, Response)] = {
       Some((res, res))
     }
