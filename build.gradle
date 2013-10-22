@@ -17,9 +17,7 @@ repositories {
     }
 }
 
-dependencies {
-    scalaTools "org.scala-lang:scala-compiler:${scalaVersion}.0"
-    
+dependencies {    
     compile "org.scala-lang:scala-library:${scalaVersion}.0"
     compile "com.sun.jersey:jersey-core:1.+"
     compile "com.sun.jersey:jersey-client:1.+"

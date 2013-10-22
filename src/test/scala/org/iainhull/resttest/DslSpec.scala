@@ -128,7 +128,7 @@ class DslSpec extends FlatSpec with ShouldMatchers {
 
       val e = evaluating { GET asserting (StatusCode === Status.Created) } should produce[AssertionError]
       driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
-      e should have('message("statusCode: 200 did not equal 201"))
+      e should have('message("StatusCode: 200 did not equal 201"))
     }
   }
   
@@ -140,7 +140,7 @@ class DslSpec extends FlatSpec with ShouldMatchers {
       GET asserting (Header("X-Person-Id") !== "999")
 
       val e = evaluating { GET asserting (StatusCode !== Status.OK) } should produce[AssertionError]
-      e should have('message("statusCode: 200 did equal 200"))
+      e should have('message("StatusCode: 200 did equal 200"))
     }
   }
   
@@ -150,7 +150,7 @@ class DslSpec extends FlatSpec with ShouldMatchers {
       driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
       
       val e = evaluating { GET asserting (StatusCode in (Status.Created, Status.Accepted)) } should produce[AssertionError]
-      e should have('message("statusCode: 200 was not in (201, 202)"))
+      e should have('message("StatusCode: 200 was not in (201, 202)"))
     }
   }
   
@@ -163,7 +163,7 @@ class DslSpec extends FlatSpec with ShouldMatchers {
     
       val e = evaluating { GET asserting (StatusCode > 999) } should produce[AssertionError]
       driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
-      e should have('message("statusCode: 200 was not greater than 999"))
+      e should have('message("StatusCode: 200 was not greater than 999"))
     }
   }
 
