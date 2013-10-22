@@ -33,7 +33,7 @@ object Dsl extends Extractors {
       proc(builder)
     }
 
-    def assert(assertions: Assertion*)(implicit driver: Driver): Response = {
+    def asserting(assertions: Assertion*)(implicit driver: Driver): Response = {
       val res = execute()
       val assertionResults = for {
         a <- assertions
