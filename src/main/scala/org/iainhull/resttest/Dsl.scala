@@ -11,7 +11,11 @@ object Dsl extends Extractors {
   implicit def methodToRichRequestBuilder(method: Method)(implicit builder: RequestBuilder): RichRequestBuilder = new RichRequestBuilder(methodToRequestBuilder(method)(builder))
 
   trait Assertion {
-    def verify(res: Response): Unit
+    def result(res: Response): Option[String]
+  }
+  
+  def assertionFailed(assertionResults: Seq[String]): Throwable = {
+    new AssertionError(assertionResults.mkString(","))
   }
 
   implicit class RichRequestBuilder(builder: RequestBuilder) {
@@ -29,9 +33,15 @@ object Dsl extends Extractors {
       proc(builder)
     }
 
-    def asserting(assertions: Assertion*)(implicit driver: Driver): Response = {
+    def assert(assertions: Assertion*)(implicit driver: Driver): Response = {
       val res = execute()
-      assertions foreach (_.verify(res))
+      val assertionResults = for {
+        a <- assertions
+        r <- a.result(res)
+      } yield r
+      if(assertionResults.nonEmpty) {
+        throw assertionFailed(assertionResults)
+      }
       res
     }
 
@@ -41,56 +51,74 @@ object Dsl extends Extractors {
     }
   }
 
-  object ~ {
-    def unapply(res: Response): Option[(Response, Response)] = {
-      Some((res, res))
-    }
-  }
-
   def using(config: RequestBuilder => RequestBuilder)(process: RequestBuilder => Unit)(implicit builder: RequestBuilder): Unit = {
     process(config(builder))
   }
 
   implicit class RichResponse(response: Response) {
-    def returning[T1](ext1: Extractor[T1])(implicit driver: Driver): T1 = {
-      ext1.op(response)
+    def returning[T1](ext1: ExtractorLike[T1])(implicit driver: Driver): T1 = {
+      ext1.value(response)
     }
 
-    def returning[T1, T2](ext1: Extractor[T1], ext2: Extractor[T2]): (T1, T2) = {
-      (ext1.op(response), ext2.op(response))
+    def returning[T1, T2](ext1: ExtractorLike[T1], ext2: ExtractorLike[T2]): (T1, T2) = {
+      (ext1.value(response), ext2.value(response))
     }
 
-    def returning[T1, T2, T3](ext1: Extractor[T1], ext2: Extractor[T2], ext3: Extractor[T3]): (T1, T2, T3) = {
-      (ext1.op(response), ext2.op(response), ext3.op(response))
+    def returning[T1, T2, T3](ext1: ExtractorLike[T1], ext2: ExtractorLike[T2], ext3: ExtractorLike[T3]): (T1, T2, T3) = {
+      (ext1.value(response), ext2.value(response), ext3.value(response))
     }
 
-    def returning[T1, T2, T3, T4](ext1: Extractor[T1], ext2: Extractor[T2], ext3: Extractor[T3], ext4: Extractor[T4]): (T1, T2, T3, T4) = {
-      (ext1.op(response), ext2.op(response), ext3.op(response), ext4.op(response))
+    def returning[T1, T2, T3, T4](ext1: ExtractorLike[T1], ext2: ExtractorLike[T2], ext3: ExtractorLike[T3], ext4: ExtractorLike[T4]): (T1, T2, T3, T4) = {
+      (ext1.value(response), ext2.value(response), ext3.value(response), ext4.value(response))
     }
   }
 
   implicit def requestBuilderToRichResponse(builder: RequestBuilder)(implicit driver: Driver): RichResponse = new RichResponse(builder.execute())
   implicit def methodToRichResponse(method: Method)(implicit builder: RequestBuilder, driver: Driver): RichResponse = new RichResponse(builder.withMethod(method).execute())
 
-  implicit class RichExtractor[T](ext: Extractor[T]) {
-    def is(expected: T): Assertion = new Assertion {
-      override def verify(res: Response): Unit = {
-        val actual = ext.op(res)
-        if (actual != expected) throw new AssertionError(actual + " != " + expected)
+  /**
+   * Add operator support to `Extractor`s these are used to generate an `Assertion` using the extracted value.
+   * 
+   * {{{
+   * GET url "http://api.rest.org/person" assert (StatusCode === Status.Ok)
+   * }}}
+   *   
+   * == Operations ==
+   *
+   * The following operations are added to all `Extractors`
+   *
+   * $ - `extractor === expected` - the extracted value is equal to the `expected` value.
+   * $ - `extractor !== expected` - the extracted value is not equal to the `expected` value.
+   * $ - `extractor in (expected1, expected2, ...)` - the extracted value is in the list of expected values.
+   * $ - `extractor notIn (expected1, expected2, ...)` - the extracted value is in the list of expected values.
+   *
+   * The following operations are added to `Extractor`s that support `scala.math.Ordering`.
+   * More precisely these operations are added to `Extractor[T]` if there exists an implicit
+   * `Ordering[T]` for any type `T`.
+   *
+   * $ - `extractor < expected` - the extracted value is less than the `expected` value.
+   * $ - `extractor <= expected` - the extracted value is less than or equal to the `expected` value.
+   * $ - `extractor > expected` - the extracted value is greater than the `expected` value.
+   * $ - `extractor <= expected` - the extracted value is greater than or equal to the `expected` value.
+   */
+  implicit class RichExtractor[A](ext: ExtractorLike[A]) {
+    def ===[B >: A](expected: B): Assertion = makeAssertion(_ == expected, expected, "did not equal")
+    def !==[B >: A](expected: B): Assertion = makeAssertion(_ != expected, expected, "did equal")
+
+    def < [B >: A](expected: B)(implicit ord: math.Ordering[B]): Assertion = makeAssertion(ord.lt  (_, expected), expected, "was not less than")
+    def <=[B >: A](expected: B)(implicit ord: math.Ordering[B]): Assertion = makeAssertion(ord.lteq(_, expected), expected, "was not less than or equal")
+    def > [B >: A](expected: B)(implicit ord: math.Ordering[B]): Assertion = makeAssertion(ord.gt(  _, expected), expected, "was not greater than")
+    def >=[B >: A](expected: B)(implicit ord: math.Ordering[B]): Assertion = makeAssertion(ord.gteq(_, expected), expected, "was not greater than or equal")    
+    
+    def in[B >: A](expectedVals: B*): Assertion = makeAssertion(expectedVals.contains(_), expectedVals.mkString("(", ", ", ")"), "was not in")
+    def notIn[B >: A](expectedVals: B*): Assertion = makeAssertion(!expectedVals.contains(_), expectedVals.mkString("(", ", ", ")"), "was in")
+    
+    private def makeAssertion[B](pred: A => Boolean, expected: Any, text: String) = new Assertion {
+      override def result(res: Response): Option[String] = {
+        val actual = ext.value(res)
+        if (!pred(actual)) Some(s"${ext.name}: $actual $text $expected") else None
       }
     }
 
-    def isNot(expected: T): Assertion = new Assertion {
-      override def verify(res: Response): Unit = {
-        val actual = ext.op(res)
-        if (actual == expected) throw new AssertionError(actual + " == " + expected)
-      }
-    }
-    def isIn(expectedVals: T*): Assertion = new Assertion {
-      override def verify(res: Response): Unit = {
-        val actual = ext.op(res)
-        if (!expectedVals.contains(actual)) throw new AssertionError(actual + " not in " + expectedVals)
-      }
-    }
   }
 }

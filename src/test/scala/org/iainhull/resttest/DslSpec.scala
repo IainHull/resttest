@@ -102,9 +102,16 @@ class DslSpec extends FlatSpec with ShouldMatchers {
       driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person?page=2&per_page=100")))
     }
   }
-
+  
+  it should "support abstracting common values with using method" in {
+    using(_ url "http://api.rest.org/") { implicit rb =>
+      GET / 'person :? ('page -> 2, 'per_page -> 100) execute ()
+      driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person?page=2&per_page=100")))
+    }
+  }
+  
   it should "support returning values from the response" in {
-    RequestBuilder() withUrl "http://api.rest.org/person/" apply { implicit rb =>
+    using(_ url "http://api.rest.org/person/") { implicit rb =>
       val (c1, b1) = GET returning (StatusCode, BodyText)
       driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
       c1 should be(Status.OK)
@@ -112,14 +119,51 @@ class DslSpec extends FlatSpec with ShouldMatchers {
     }
   }
 
-  it should "support asserting values from the response" in {
-    RequestBuilder() withUrl "http://api.rest.org/person/" apply { implicit rb =>
-      GET asserting (StatusCode is Status.OK)
+  it should "support asserting values equals check" in {
+    using(_ url "http://api.rest.org/person/") { implicit rb =>
+      GET assert (StatusCode === Status.OK)
       driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
+      
+      GET assert (Header("X-Person-Id") === "1234")
 
-      val e = evaluating { GET asserting (StatusCode is Status.Created) } should produce[AssertionError]
+      val e = evaluating { GET assert (StatusCode === Status.Created) } should produce[AssertionError]
       driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
-      e should have('message("200 != 201"))
+      e should have('message("statusCode: 200 did not equal 201"))
+    }
+  }
+  
+  it should "support asserting values not-equals check" in {
+    using(_ url "http://api.rest.org/person/") { implicit rb =>
+      GET assert (StatusCode !== Status.Created)
+      driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
+      
+      GET assert (Header("X-Person-Id") !== "999")
+
+      val e = evaluating { GET assert (StatusCode !== Status.OK) } should produce[AssertionError]
+      e should have('message("statusCode: 200 did equal 200"))
+    }
+  }
+  
+  it should "support asserting values in check" in {
+    using(_ url "http://api.rest.org/person/") { implicit rb =>
+      GET assert (StatusCode in (Status.OK, Status.Created))
+      driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
+      
+      val e = evaluating { GET assert (StatusCode in (Status.Created, Status.Accepted)) } should produce[AssertionError]
+      e should have('message("statusCode: 200 was not in (201, 202)"))
+    }
+  }
+  
+  it should "support asserting values Ordered comparison operator checks" in {
+    using(_ url "http://api.rest.org/person/") { implicit rb =>
+    GET assert (StatusCode > 1)
+    GET assert (StatusCode >= 1)
+    GET assert (StatusCode < 299)
+    GET assert (StatusCode <= 299)
+    
+      val e = evaluating { GET assert (StatusCode > 999) } should produce[AssertionError]
+      driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
+      e should have('message("statusCode: 200 was not greater than 999"))
     }
   }
 
@@ -212,7 +256,7 @@ class DslSpec extends FlatSpec with ShouldMatchers {
   it should "support returning values from the response" in {
     RequestBuilder() url "http://api.rest.org/person/" apply { implicit rb =>
       val (c1, b1) = GET returning (StatusCode, Body)
-      val (c2, id) = POST body personJson returning (StatusCode, headerText("X-Person-Id"))
+      val (c2, id) = POST body personJson returning (StatusCode, Header("X-Person-Id"))
       val (c3, b3) = GET / id returning (StatusCode, Body)
       val (c4, b4) = GET returning (StatusCode, Body)
       val c5 = DELETE / id returning StatusCode
@@ -234,13 +278,13 @@ class DslSpec extends FlatSpec with ShouldMatchers {
       Nil
 
     RequestBuilder() url "http://api.rest.org/person" apply { implicit rb =>
-      GET asserting (StatusCode is Status.OK, jsonBodyAsList[Person] is EmptyList)
-      val id = POST body personJson asserting (StatusCode is Status.Created) returning (headerText("X-Person-Id"))
-      GET / id asserting (StatusCode is Status.OK, jsonBodyAs[Person] is Jason)
-      GET asserting (StatusCode is Status.OK, jsonBodyAsList[Person] is Seq(Jason))
-      DELETE / id asserting (StatusCode is Status.OK)
-      GET / id asserting (StatusCode is Status.NotFound)
-      GET asserting (StatusCode is Status.OK, jsonBodyAsList[Person] is EmptyList)
+      GET assert (StatusCode === Status.OK, jsonBodyAsList[Person] === EmptyList)
+      val id = POST body personJson assert (StatusCode === Status.Created) returning (Header("X-Person-Id"))
+      GET / id assert (StatusCode === Status.OK, jsonBodyAs[Person] === Jason)
+      GET assert (StatusCode === Status.OK, jsonBodyAsList[Person] === Seq(Jason))
+      DELETE / id assert (StatusCode === Status.OK)
+      GET / id assert (StatusCode === Status.NotFound)
+      GET assert (StatusCode === Status.OK, jsonBodyAsList[Person] === EmptyList)
     }
   }
   
@@ -259,7 +303,7 @@ class DslSpec extends FlatSpec with ShouldMatchers {
       
     val BodyAsPersonList = jsonBodyAsList[Person]
     val BodyAsPerson= jsonBodyAs[Person]
-    val PersonIdHeader = new Header("X-Person-Id").text
+    val PersonIdHeader = Header("X-Person-Id")
 
     using(_ url "http://api.rest.org/person") { implicit rb =>
       GET expecting {

@@ -8,7 +8,6 @@ import org.scalatest.matchers.ShouldMatchers
 import Api._
 
 object ~ {
-
   def unapply(res: Response): Option[(Response, Response)] = {
     Some((res, res))
   }
@@ -28,7 +27,7 @@ class UnapplySpec extends FlatSpec with ShouldMatchers {
         
     val res = Response(Status.OK, toHeaders("X-Person-Id" -> "1234", Header.ContentType -> "application/json"), Some(personJson))
     
-    val HeaderId = headerText("X-Person-Id")
+    val HeaderId = Header("X-Person-Id")
     val BodyAsPerson = jsonBodyAs[Person]
     
 //    GET / "foo" expecting {
@@ -37,7 +36,7 @@ class UnapplySpec extends FlatSpec with ShouldMatchers {
     
     
     expecting(res) {
-      case StatusCode(Status.OK) ~ HeaderId(h) ~ Header.ContentType.list(l) ~ BodyAsPerson(p) =>
+      case StatusCode(Status.OK) ~ HeaderId(h) ~ Header.ContentType.asList(l) ~ BodyAsPerson(p) =>
         l should be(List("application/json"))
         h should be ("1234")
         p.name should be ("Jason")

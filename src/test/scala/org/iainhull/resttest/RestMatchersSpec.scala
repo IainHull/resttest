@@ -23,40 +23,20 @@ class RestMatcherSpec extends FlatSpec with ShouldMatchers {
   "RestMatchers" should "support 'have property' equals check" in {
     response should have('statusCode(Status.OK))
     response should have(StatusCode(Status.OK))
-    response should have(StatusCode === Status.OK)
 
-    response should have(headerText("header2") === "value")
-  }
-
-  it should "support 'have property' not-equals check" in {
-    response should have(StatusCode !== 1)
-    response should have(headerText("header2") !== "not value")
-    response should have(headerList("header2") !== List("not value"))
-  }
-
-  it should "support 'have property' in check" in {
-    response should have(StatusCode in (Status.OK, Status.Created))
+    response should have(Header("header2")("value"))
   }
 
   it should "support 'have property' check for Extractor[Option[_]]" in {
-    response should have(header("header1"))
+    response should have(Header("header1").asOption)
     response should not(have(Body))
-  }
-
-  it should "support 'have property' Ordered comparison operator checks" in {
-    response should have(StatusCode > 1)
-    response should have(StatusCode >= 1)
-    response should have(StatusCode < 299)
-    response should have(StatusCode <= 299)
-  }
-
-  it should "support 'have property' Ordered between operator checks" in {
-    response should have(StatusCode between (200, 299))
   }
 
   "Sample use-case" should "support asserting on values from the response with have matchers" in {
     import JsonExtractors._
     val EmptyList = Seq()
+    val BodyAsListPerson = jsonBodyAsList[Person]
+    val BodyAsPerson = jsonBodyAs[Person]
 
     driver.responses = Response(Status.OK, Map(), Some("[]")) ::
       Response(Status.Created, toHeaders("X-Person-Id" -> "99"), None) ::
@@ -68,20 +48,20 @@ class RestMatcherSpec extends FlatSpec with ShouldMatchers {
       Nil
 
     using(_ url "http://api.rest.org/person") { implicit rb =>
-      GET should have(StatusCode(Status.OK), jsonBodyAsList[Person] === EmptyList)
+      GET should have(StatusCode(Status.OK), BodyAsListPerson(EmptyList))
 
-      val (status, id) = POST body personJson returning (StatusCode, headerText("X-Person-Id"))
+      val (status, id) = POST body personJson returning (StatusCode, Header("X-Person-Id"))
       status should be(Status.Created)
 
-      val foo = GET / id should have(StatusCode(Status.OK), jsonBodyAs[Person] === Jason)
+      val foo = GET / id should have(StatusCode(Status.OK), BodyAsPerson(Jason))
 
-      GET should have(StatusCode === Status.OK, jsonBodyAsList[Person] === Seq(Jason))
+      GET should have(StatusCode(Status.OK), BodyAsListPerson(Seq(Jason)))
 
-      DELETE / id should have(StatusCode === Status.OK)
+      DELETE / id should have(StatusCode(Status.OK))
 
-      GET / id should have(StatusCode === Status.NotFound)
+      GET / id should have(StatusCode(Status.NotFound))
 
-      GET should have(StatusCode(Status.OK), jsonBodyAsList[Person] === EmptyList)
+      GET should have(StatusCode(Status.OK), BodyAsListPerson( EmptyList))
     }
   }
 
@@ -106,7 +86,7 @@ class RestMatcherSpec extends FlatSpec with ShouldMatchers {
 
       val id = POST body personJson expecting { implicit res =>
         StatusCode should be(Status.Created)
-        headerText("X-Person-Id").value
+        Header("X-Person-Id").value
       }
 
       GET / id expecting { implicit res =>
