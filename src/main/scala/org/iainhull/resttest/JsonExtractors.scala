@@ -30,31 +30,35 @@ trait JsonExtractors extends Extractors {
   /**
    * Extract the response body as a json document
    */
-  val jsonBody = Extractor[JsValue]("jsonBody", bodyText.op andThen Json.parse)
+  val JsonBody = BodyText andThen Json.parse as "JsonBody"
 
   /**
    * Extract the response body as an object.
    */
-  def jsonBodyAs[T: Reads]: Extractor[T] = jsonBodyAs(JsPath)
+  def jsonBodyAs[T: Reads](implicit tag : reflect.ClassTag[T] ): Extractor[T] = jsonBodyAs(JsPath)
 
   /**
    * Extract a portion of the response body as an object.
    *
    * @param path the path for the portion of the response to use
    */
-  def jsonBodyAs[T: Reads](path: JsPath = JsPath) = Extractor[T]("jsonBodyAs", jsonBody.op andThen (jsonToValue(_, path)))
+  def jsonBodyAs[T: Reads](path: JsPath = JsPath)(implicit tag : reflect.ClassTag[T] ) = {
+    JsonBody andThen (jsonToValue(_, path)) as (s"JsonBodyAs[${tag.runtimeClass.getName}]")
+  }
 
   /**
    * Extract the response body as a List of objects.
    */
-  def jsonBodyAsList[T: Reads]: Extractor[Seq[T]] = jsonBodyAsList(JsPath)
+  def jsonBodyAsList[T: Reads](implicit tag : reflect.ClassTag[T] ): Extractor[Seq[T]] = jsonBodyAsList(JsPath)
 
   /**
    * Extract a portion of the response body as a List of objects.
    *
    * @param path the path for the portion of the response to use
    */
-  def jsonBodyAsList[T: Reads](path: JsPath = JsPath) = Extractor[Seq[T]]("jsonBodyAsList", jsonBody.op andThen (jsonToList(_, path)))
+  def jsonBodyAsList[T: Reads](path: JsPath = JsPath)(implicit tag : reflect.ClassTag[T] ) = {
+    JsonBody andThen (jsonToList(_, path)) as (s"JsonBodyAsList[${tag.runtimeClass.getName}]")
+  }
 }
 
 object JsonExtractors extends JsonExtractors with Dsl

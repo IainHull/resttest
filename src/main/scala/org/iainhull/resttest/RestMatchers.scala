@@ -3,6 +3,8 @@ package org.iainhull.resttest
 import org.scalatest.matchers.ShouldMatchers.AnyRefShouldWrapper
 import org.scalatest.matchers.HavePropertyMatcher
 import org.scalatest.matchers.HavePropertyMatchResult
+import org.scalatest.matchers.ShouldMatchers.AnyShouldWrapper
+import org.scalatest.Assertions
 
 /**
  * Adds [[http://www.scalatest.org/ ScalaTest]] support to the RestTest [[Dsl]].
@@ -10,7 +12,7 @@ import org.scalatest.matchers.HavePropertyMatchResult
  * The `should` keyword is added to [[RequestBuilder]] and [[Response]] expressions, the
  * `RequestBuilder` is executed first and `should` applied to the `Response`.
  *
- * The `have` keyword supports [[Extractor]]s.  See [[ExtractorToHavePropertyMatcher]] for more details.
+ * The `have` keyword supports [[ExtractorLike]]s.  See [[ExtractorToHavePropertyMatcher]] for more details.
  *
  * == Example ==
  *
@@ -60,6 +62,13 @@ trait RestMatchers {
     requestBuilderToShouldWrapper(builder.withMethod(method))
   }
 
+  implicit def extractorToShouldWrapper[T](extractor: ExtractorLike[T])(implicit response: Response): AnyShouldWrapper[T] = {
+    Assertions.withClue(extractor.name) {
+      val v: T = extractor.value
+      new AnyShouldWrapper[T](v)
+    }
+  }  
+  
   /**
    * Implicitly add operations to [[Extractor]] that create `HavePropertyMatcher`s.
    *
@@ -67,78 +76,17 @@ trait RestMatchers {
    *
    * {{{
    * response should have(statusCode(Status.OK))
-   * response should have(headerText("header2") === "value")
-   * response should have(statusCode !== 1)
-   * response should have(statusCode > 1)
-   * response should have(statusCode in (Status.OK, Status.Created))
-   * response should have(statusCode between (400, 499))
    * }}}
-   *
-   * == Operations ==
-   *
-   * The following operations are added to all `Extractors`
-   *
-   * $ - `extractor(expected)` - the extracted value is equal to the `expected` value.
-   * $ - `extractor === expected` - the extracted value is equal to the `expected` value.
-   * $ - `extractor !== expected` - the extracted value is not equal to the `expected` value.
-   * $ - `extractor in (expected1, expected2, ...)` - the extracted value is in the list of expected values.
-   *
-   * The following operations are added to `Extractor`s that support `scala.math.Ordering`.
-   * More precisely these operations are added to `Extractor[T]` if there exists an implicit
-   * `Ordering[T]` for any type `T`.
-   *
-   * $ - `extractor < expected` - the extracted value is less than the `expected` value.
-   * $ - `extractor <= expected` - the extracted value is less than or equal to the `expected` value.
-   * $ - `extractor > expected` - the extracted value is greater than the `expected` value.
-   * $ - `extractor <= expected` - the extracted value is greater than or equal to the `expected` value.
-   * $ - `extractor between (lowExpected, highExpected)` - the extracted value is greater than or equal to `lowExpected` and less than or equal to `highExpected`.
    */
-  implicit class ExtractorToHavePropertyMatcher[T](extractor: Extractor[T]) {
-    def apply(expected: T) = makeMatcher(_ == _, expected)
-
-    def ===(expected: T) = makeMatcher(_ == _, expected)
-    def !==(expected: T) = makeMatcher(_ != _, expected, "!= ")
-
-    def <(expected: T)(implicit ord: math.Ordering[T]) = makeMatcher(ord.lt, expected, "< ")
-    def <=(expected: T)(implicit ord: math.Ordering[T]) = makeMatcher(ord.lteq, expected, "<= ")
-    def >(expected: T)(implicit ord: math.Ordering[T]) = makeMatcher(ord.gt, expected, "> ")
-    def >=(expected: T)(implicit ord: math.Ordering[T]) = makeMatcher(ord.gteq, expected, ">= ")
-
-    private def makeMatcher(pred: (T, T) => Boolean, expected: T, expectedHint: String = ""): HavePropertyMatcher[Response, String] = {
+  implicit class ExtractorToHavePropertyMatcher[T](extractor: ExtractorLike[T]) {
+    def apply(expected: T): HavePropertyMatcher[Response, String] = {
       new HavePropertyMatcher[Response, String] {
         def apply(response: Response) = {
-          val actual = extractor.op(response)
+          val actual = extractor.value(response)
           new HavePropertyMatchResult(
-            pred(actual, expected),
+            actual == expected,
             extractor.name,
-            expectedHint + expected.toString,
-            actual.toString)
-        }
-      }
-    }
-
-    def in(firstExpected: T, moreExpected: T*): HavePropertyMatcher[Response, String] = {
-      val allExpected = firstExpected +: moreExpected
-      new HavePropertyMatcher[Response, String] {
-        def apply(response: Response) = {
-          val actual = extractor.op(response)
-          new HavePropertyMatchResult(
-            allExpected.contains(actual),
-            extractor.name,
-            "in " + allExpected.mkString("(", ",", ")"),
-            actual.toString)
-        }
-      }
-    }
-
-    def between(lowExpected: T, highExpected: T)(implicit ord: math.Ordering[T]): HavePropertyMatcher[Response, String] = {
-      new HavePropertyMatcher[Response, String] {
-        def apply(response: Response) = {
-          val actual = extractor.op(response)
-          new HavePropertyMatchResult(
-            ord.lteq(lowExpected, actual) && ord.lteq(actual, highExpected),
-            extractor.name,
-            "between (" + lowExpected + "," + highExpected + ")",
+            expected.toString,
             actual.toString)
         }
       }
@@ -155,9 +103,9 @@ trait RestMatchers {
    * response should have(body)
    * }}}
    */
-  implicit class OptionExtractorToHavePropertyMatcher(extractor: Extractor[Option[_]]) extends HavePropertyMatcher[Response, String] {
+  implicit class OptionExtractorToHavePropertyMatcher(extractor: ExtractorLike[Option[_]]) extends HavePropertyMatcher[Response, String] {
     def apply(response: Response) = {
-      val actual = extractor.op(response)
+      val actual = extractor.value(response)
       new HavePropertyMatchResult(
         actual.isDefined,
         extractor.name,
