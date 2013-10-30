@@ -43,7 +43,10 @@ import java.net.URI
  * {{{
  * GET url "http://api.rest.org/person"
  * }}}
- * creates a `RequestBuilder` with the method and url properties set.
+ * is the same as
+ * {{{
+ * RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person")
+ * }}}
  * 
  * The `RequestBuilder` DSL also supports default values passed implicitly into expressions,
  * for example:
@@ -57,7 +60,7 @@ import java.net.URI
  * == Executing a Request ==
  * 
  * There are three ways to execute a request: [[RichRequestBuilder]]`.execute`, [[RichResponse]]`.returning`,
- * [[RichRequestBuilder]]`.asserting`.
+ * [[RichRequestBuilder]]`.asserting`, these can all be applied to `RequestBuilder` instances.
  * 
  * The `execute` method executes the request with the implicit [[Api.Driver]] and returns the `Response`.
  * {{{
@@ -67,8 +70,8 @@ import java.net.URI
  * The `returning` method executes the request like the `execute` method, except it applies one or more
  * [[Extractor]]s to the `Response` to return only the extracted information. 
  * {{{
- * val code1 = GET url "http://api.rest.org/person" returning (statusCode)
- * val (code2, people) = GET url "http://api.rest.org/person" returning (statusCode, jsonBodyAsList[Person])
+ * val code1 = GET url "http://api.rest.org/person" returning (StatusCode)
+ * val (code2, people) = GET url "http://api.rest.org/person" returning (StatusCode, jsonBodyAsList[Person])
  * }}}
  * 
  * The `asserting` method executes the request like the `execute` method, except it verifies the specified
