@@ -7,7 +7,6 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class ExtractorsSpec extends FlatSpec with ShouldMatchers {
-  import Api._
   import Dsl._
   
   val response = Response(Status.OK, toHeaders("SimpleHeader" -> "SimpleValue", "MultiHeader" -> "Value1", "MultiHeader" -> "Value2"), Some("body"))

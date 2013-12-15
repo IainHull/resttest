@@ -65,7 +65,7 @@ object TestData {
     (__ \ "email").read[String])(Person)
    
    
-   class TestDriver extends Driver {
+   object TestClient extends HttpClient {
     val defaultResponse = Response(200, Map("X-Person-Id" -> List("1234")), Some("body"))
     var responses = List[Response]()
     var requests = List[Request]()
@@ -74,7 +74,7 @@ object TestData {
     def nextResponse = responses.headOption.getOrElse(defaultResponse)
     def nextResponse_=(response: Response) = responses = List(response)
 
-    def execute(request: Request): Response = {
+    override def apply(request: Request): Response = {
       requests = request :: requests
       if (!responses.isEmpty) {
         val response = responses.head
@@ -85,6 +85,4 @@ object TestData {
       }
     }
   }
-  
-  def newTestDriver = new TestDriver
 }

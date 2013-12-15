@@ -90,9 +90,8 @@ import java.net.URI
  * Exception (failing the test).  See [[Extractors]] for more information on the available default `Extractor`s
  * And how to implement your own.
  */
-trait Dsl extends Extractors {
+trait Dsl extends Api with Extractors {
   import language.implicitConversions
-  import Api._
 
   implicit def toRequest(builder: RequestBuilder): Request = builder.toRequest
   implicit def methodToRequestBuilder(method: Method)(implicit builder: RequestBuilder): RequestBuilder = builder.withMethod(method)
@@ -113,15 +112,15 @@ trait Dsl extends Extractors {
     def /(p: Any) = builder.addPath(p.toString)
     def :?(params: (Symbol, Any)*) = builder.addQuery(params map (p => (p._1.name, p._2.toString)): _*)
 
-    def execute()(implicit driver: Driver): Response = {
-      driver.execute(builder)
+    def execute()(implicit client: HttpClient): Response = {
+      client(builder)
     }
 
     def apply[T](proc: RequestBuilder => T): T = {
       proc(builder)
     }
 
-    def asserting(assertions: Assertion*)(implicit driver: Driver): Response = {
+    def asserting(assertions: Assertion*)(implicit client: HttpClient): Response = {
       val res = execute()
       val assertionResults = for {
         a <- assertions
@@ -133,18 +132,36 @@ trait Dsl extends Extractors {
       res
     }
 
-    def expecting[T](func: Response => T)(implicit driver: Driver): T = {
+    def expecting[T](func: Response => T)(implicit client: HttpClient): T = {
       val res = execute()
       func(res)
     }
   }
 
+  /**
+   * Extend the default request's configuration so that partially configured requests to be reused.  Foe example:
+   * 
+   * {{{
+   * using(_ url "http://api.rest.org/person") { implicit rb =>
+   *   GET asserting (StatusCode === Status.OK, jsonBodyAsList[Person] === EmptyList)
+   *   val id = POST body personJson asserting (StatusCode === Status.Created) returning (Header("X-Person-Id"))
+   *   GET / id asserting (StatusCode === Status.OK, jsonBodyAs[Person] === Jason)
+   * }
+   * }}}
+   * 
+   * @param config 
+   * 		a function to configure the default request
+   * @param block
+   *        the block of code where the the newly configured request is applied
+   * @param builder
+   *        the current default request, implicitly resolved, defaults to the empty request
+   */
   def using(config: RequestBuilder => RequestBuilder)(process: RequestBuilder => Unit)(implicit builder: RequestBuilder): Unit = {
     process(config(builder))
   }
 
   implicit class RichResponse(response: Response) {
-    def returning[T1](ext1: ExtractorLike[T1])(implicit driver: Driver): T1 = {
+    def returning[T1](ext1: ExtractorLike[T1])(implicit client: HttpClient): T1 = {
       ext1.value(response)
     }
 
@@ -161,8 +178,8 @@ trait Dsl extends Extractors {
     }
   }
 
-  implicit def requestBuilderToRichResponse(builder: RequestBuilder)(implicit driver: Driver): RichResponse = new RichResponse(builder.execute())
-  implicit def methodToRichResponse(method: Method)(implicit builder: RequestBuilder, driver: Driver): RichResponse = new RichResponse(builder.withMethod(method).execute())
+  implicit def requestBuilderToRichResponse(builder: RequestBuilder)(implicit client: HttpClient): RichResponse = new RichResponse(builder.execute())
+  implicit def methodToRichResponse(method: Method)(implicit builder: RequestBuilder, client: HttpClient): RichResponse = new RichResponse(builder.withMethod(method).execute())
 
   /**
    * Add operator support to `Extractor`s these are used to generate an `Assertion` using the extracted value.

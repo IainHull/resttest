@@ -12,11 +12,10 @@ class RestMatcherSpec extends FlatSpec with ShouldMatchers {
   import language.implicitConversions
 
   import TestData._
-  import Api._
   import Dsl._
   import RestMatchers._
 
-  implicit val driver = newTestDriver
+  implicit val driver = TestClient
 
   val response = Response(Status.OK, toHeaders("header1" -> "", "header2" -> "value", "header3" -> "value1", "header3" -> "value2"), None)
 

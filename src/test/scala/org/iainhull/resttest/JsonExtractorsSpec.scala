@@ -9,7 +9,6 @@ import play.api.libs.functional.syntax._
 
 @RunWith(classOf[JUnitRunner])
 class JsonExtractorsSpec extends FlatSpec with ShouldMatchers {
-  import Api._
   import Dsl._
   import JsonExtractors._
   import TestData._

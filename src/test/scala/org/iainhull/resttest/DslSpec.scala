@@ -12,11 +12,10 @@ import play.api.libs.json._
 
 @RunWith(classOf[JUnitRunner])
 class DslSpec extends FlatSpec with ShouldMatchers {
-  import Api._
   import Dsl._
   import TestData._
 
-  implicit val driver = newTestDriver
+  implicit val driver = TestClient
 
   "The DSL" should "support a basic rest use case with a RequestBuilder" in {
     RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/").toRequest should
@@ -189,34 +188,34 @@ class DslSpec extends FlatSpec with ShouldMatchers {
    * to a test above to verify the functionality.
    */
   "Sample use-case" should "support a basic rest use case with a RequestBuilder" in {
-    val r1 = driver.execute(RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/"))
-    val r2 = driver.execute(RequestBuilder().withMethod(POST).withUrl("http://api.rest.org/person/").withBody(personJson))
+    val r1 = TestClient(RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/"))
+    val r2 = TestClient(RequestBuilder().withMethod(POST).withUrl("http://api.rest.org/person/").withBody(personJson))
     val id = r2.headers.get("X-Person-Id").get.head
-    val r3 = driver.execute(RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/").addPath(id))
-    val r4 = driver.execute(RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/"))
-    val r5 = driver.execute(RequestBuilder().withMethod(DELETE).withUrl("http://api.rest.org/person/").addPath(id))
-    val r6 = driver.execute(RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/"))
+    val r3 = TestClient(RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/").addPath(id))
+    val r4 = TestClient(RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/"))
+    val r5 = TestClient(RequestBuilder().withMethod(DELETE).withUrl("http://api.rest.org/person/").addPath(id))
+    val r6 = TestClient(RequestBuilder().withMethod(GET).withUrl("http://api.rest.org/person/"))
   }
 
   it should "support a basic rest use case, reusing a RequestBuilder" in {
     val rb = RequestBuilder().withUrl("http://api.rest.org/person/")
-    val r1 = driver.execute(rb.withMethod(GET))
-    val r2 = driver.execute(rb.withMethod(POST).withBody(personJson))
+    val r1 = TestClient(rb.withMethod(GET))
+    val r2 = TestClient(rb.withMethod(POST).withBody(personJson))
     val id = r2.headers.get("X-Person-Id").get.head
-    val r3 = driver.execute(rb.withMethod(GET).addPath(id))
-    val r4 = driver.execute(rb.withMethod(GET))
-    val r5 = driver.execute(rb.withMethod(DELETE).addPath(id))
-    val r6 = driver.execute(rb.withMethod(GET))
+    val r3 = TestClient(rb.withMethod(GET).addPath(id))
+    val r4 = TestClient(rb.withMethod(GET))
+    val r5 = TestClient(rb.withMethod(DELETE).addPath(id))
+    val r6 = TestClient(rb.withMethod(GET))
   }
 
   it should "support a basic rest use case, with Method boostrapping the DSL and infix notation" in {
-    val r1 = driver.execute(GET withUrl "http://api.rest.org/person/")
-    val r2 = driver.execute(POST withUrl "http://api.rest.org/person/" withBody personJson)
+    val r1 = TestClient(GET withUrl "http://api.rest.org/person/")
+    val r2 = TestClient(POST withUrl "http://api.rest.org/person/" withBody personJson)
     val id = r2.headers.get("X-Person-Id").get.head
-    val r3 = driver.execute(GET withUrl "http://api.rest.org/person/" addPath id)
-    val r4 = driver.execute(GET withUrl "http://api.rest.org/person/")
-    val r5 = driver.execute(DELETE withUrl "http://api.rest.org/person/" addPath id)
-    val r6 = driver.execute(GET withUrl "http://api.rest.org/person/")
+    val r3 = TestClient(GET withUrl "http://api.rest.org/person/" addPath id)
+    val r4 = TestClient(GET withUrl "http://api.rest.org/person/")
+    val r5 = TestClient(DELETE withUrl "http://api.rest.org/person/" addPath id)
+    val r6 = TestClient(GET withUrl "http://api.rest.org/person/")
   }
 
   it should "support a basic rest use case, with Method boostrapping the DSL and execute method" in {
@@ -323,7 +322,7 @@ class DslSpec extends FlatSpec with ShouldMatchers {
         case StatusCode(Status.OK) & BodyAsPersonList(EmptyList) =>
       }
       val id = POST body personJson expecting {
-        case StatusCode(Status.Created) ~ PersonIdHeader(id) => id
+        case StatusCode(Status.Created) & PersonIdHeader(id) => id
       }
       GET / id expecting {
         case StatusCode(Status.OK) & BodyAsPerson(p) => p should be(Jason)

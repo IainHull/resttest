@@ -10,27 +10,22 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class ApiSpec extends FlatSpec with ShouldMatchers {
   import Api._
-
-  val driver = new Driver {
-    def execute(request: Request): Response = {
-      Response(200, Map("X-Person-Id" -> List("1234")), None)
-    }
-  }
+  import TestData._
 
   "A Simple Driver" should "take a request and return a static response" in {
-    val response = driver.execute(Request(method = GET, url = new URI("http://api.rest.org/person")))
+    val response = TestClient(Request(method = GET, url = new URI("http://api.rest.org/person")))
     response.statusCode should be(Status.OK)
   }
 
   "The Api" should "support a simple rest use case, if a little long winded" in {
     val personJson = """{ "name": "Jason" }"""
-    val r1 = driver.execute(Request(GET, new URI("http://api.rest.org/person/"), Map(), None))
-    val r2 = driver.execute(Request(POST, new URI("http://api.rest.org/person/"), Map(), Some(personJson)))
+    val r1 = TestClient(Request(GET, new URI("http://api.rest.org/person/"), Map(), None))
+    val r2 = TestClient(Request(POST, new URI("http://api.rest.org/person/"), Map(), Some(personJson)))
     val id = r2.headers("X-Person-Id").head
-    val r3 = driver.execute(Request(GET, new URI("http://api.rest.org/person/" + id), Map(), None))
-    val r4 = driver.execute(Request(GET, new URI("http://api.rest.org/person/"), Map(), None))
-    val r5 = driver.execute(Request(DELETE, new URI("http://api.rest.org/person/" + id), Map(), None))
-    val r6 = driver.execute(Request(GET, new URI("http://api.rest.org/person/"), Map(), None))
+    val r3 = TestClient(Request(GET, new URI("http://api.rest.org/person/" + id), Map(), None))
+    val r4 = TestClient(Request(GET, new URI("http://api.rest.org/person/"), Map(), None))
+    val r5 = TestClient(Request(DELETE, new URI("http://api.rest.org/person/" + id), Map(), None))
+    val r6 = TestClient(Request(GET, new URI("http://api.rest.org/person/"), Map(), None))
   }
 
   "A RequestBuilder" should "simplify the creation of request objects" in {

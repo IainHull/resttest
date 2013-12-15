@@ -9,10 +9,10 @@ import org.scalatest.Assertions
 /**
  * Adds [[http://www.scalatest.org/ ScalaTest]] support to the RestTest [[Dsl]].
  *
- * The `should` keyword is added to [[RequestBuilder]] and [[Response]] expressions, the
+ * The `should` keyword is added to [[Api.RequestBuilder]] and [[Api.Response]] expressions, the
  * `RequestBuilder` is executed first and `should` applied to the `Response`.
  *
- * The `have` keyword supports [[ExtractorLike]]s.  See [[ExtractorToHavePropertyMatcher]] for more details.
+ * The `have` keyword supports [[Extractors.ExtractorLike]]s.  See [[ExtractorToHavePropertyMatcher]] for more details.
  *
  * == Example ==
  *
@@ -41,16 +41,16 @@ trait RestMatchers {
   import Dsl._
 
   /**
-   * Implicitly execute a [[RequestBuilder]] and convert the [[Response]] into a `AnyRefShouldWrapper`
+   * Implicitly execute a [[Api.RequestBuilder]] and convert the [[Api.Response]] into a `AnyRefShouldWrapper`
    *
    * This adds support for ScalaTest's `ShouldMatchers` to `RequestBuilder`
    */
-  implicit def requestBuilderToShouldWrapper(builder: RequestBuilder)(implicit driver: Driver): AnyRefShouldWrapper[Response] = {
+  implicit def requestBuilderToShouldWrapper(builder: RequestBuilder)(implicit client: HttpClient): AnyRefShouldWrapper[Response] = {
     responseToShouldWrapper(builder execute ())
   }
 
   /**
-   * Implicitly convert a [[Response]] into a `AnyRefShouldWrapper`
+   * Implicitly convert a [[Api.Response]] into a `AnyRefShouldWrapper`
    *
    * This adds support for ScalaTest's `ShouldMatchers` to `Response`
    */
@@ -58,7 +58,7 @@ trait RestMatchers {
     new AnyRefShouldWrapper(response)
   }
 
-  implicit def methodToShouldWrapper(method: Method)(implicit builder: RequestBuilder, driver: Driver): AnyRefShouldWrapper[Response] = {
+  implicit def methodToShouldWrapper(method: Method)(implicit builder: RequestBuilder, client: HttpClient): AnyRefShouldWrapper[Response] = {
     requestBuilderToShouldWrapper(builder.withMethod(method))
   }
 
@@ -70,7 +70,7 @@ trait RestMatchers {
   }  
   
   /**
-   * Implicitly add operations to [[Extractor]] that create `HavePropertyMatcher`s.
+   * Implicitly add operations to [[Extractors.Extractor]] that create `HavePropertyMatcher`s.
    *
    * This adds support for reusing `Extractor`s in `should have(...)` expressions, for example
    *
@@ -94,7 +94,7 @@ trait RestMatchers {
   }
 
   /**
-   * Implicitly convert an [[Extractor]] that returns any type of `Option` into a `HavePropertyMatcher`.
+   * Implicitly convert an [[Extractors.Extractor]] that returns any type of `Option` into a `HavePropertyMatcher`.
    *
    * This adds support for reusing `Extractor[Option[_]]`s in `should have(...)` expressions, for example
    *

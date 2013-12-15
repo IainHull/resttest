@@ -6,9 +6,8 @@ import play.api.libs.json.Reads
 import play.api.libs.json.JsArray
 import play.api.libs.json.Json
 
-trait JsonExtractors extends Extractors { 
-  import Api._
-  import Dsl._
+trait JsonExtractors {
+  import Extractors._
   
   /**
    * Extract a path from a json document and deserialise it to a List
@@ -61,4 +60,4 @@ trait JsonExtractors extends Extractors {
   }
 }
 
-object JsonExtractors extends JsonExtractors with Dsl
+object JsonExtractors extends JsonExtractors
