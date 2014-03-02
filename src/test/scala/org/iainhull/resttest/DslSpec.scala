@@ -1,17 +1,16 @@
 package org.iainhull.resttest
 
-import org.scalatest.junit.ShouldMatchersForJUnit
 import org.scalatest.Suite
 import org.junit.Test
 import java.net.URI
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import play.api.libs.json._
 
 @RunWith(classOf[JUnitRunner])
-class DslSpec extends FlatSpec with ShouldMatchers {
+class DslSpec extends FlatSpec with Matchers {
   import Dsl._
   import TestData._
 

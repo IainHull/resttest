@@ -2,13 +2,12 @@ package org.iainhull.resttest
 
 import java.net.URI
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
-import org.scalatest.junit.ShouldMatchersForJUnit
+import org.scalatest.Matchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class ApiSpec extends FlatSpec with ShouldMatchers {
+class ApiSpec extends FlatSpec with Matchers {
   import Api._
   import TestData._
 

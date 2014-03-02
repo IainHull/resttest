@@ -1,9 +1,8 @@
 package org.iainhull.resttest
 
-import org.scalatest.matchers.ShouldMatchers.AnyRefShouldWrapper
+import org.scalatest.Matchers.AnyShouldWrapper
 import org.scalatest.matchers.HavePropertyMatcher
 import org.scalatest.matchers.HavePropertyMatchResult
-import org.scalatest.matchers.ShouldMatchers.AnyShouldWrapper
 import org.scalatest.Assertions
 
 /**
@@ -45,7 +44,7 @@ trait RestMatchers {
    *
    * This adds support for ScalaTest's `ShouldMatchers` to `RequestBuilder`
    */
-  implicit def requestBuilderToShouldWrapper(builder: RequestBuilder)(implicit client: HttpClient): AnyRefShouldWrapper[Response] = {
+  implicit def requestBuilderToShouldWrapper(builder: RequestBuilder)(implicit client: HttpClient): AnyShouldWrapper[Response] = {
     responseToShouldWrapper(builder execute ())
   }
 
@@ -54,11 +53,11 @@ trait RestMatchers {
    *
    * This adds support for ScalaTest's `ShouldMatchers` to `Response`
    */
-  implicit def responseToShouldWrapper(response: Response): AnyRefShouldWrapper[Response] = {
-    new AnyRefShouldWrapper(response)
+  implicit def responseToShouldWrapper(response: Response): AnyShouldWrapper[Response] = {
+    new AnyShouldWrapper(response)
   }
 
-  implicit def methodToShouldWrapper(method: Method)(implicit builder: RequestBuilder, client: HttpClient): AnyRefShouldWrapper[Response] = {
+  implicit def methodToShouldWrapper(method: Method)(implicit builder: RequestBuilder, client: HttpClient): AnyShouldWrapper[Response] = {
     requestBuilderToShouldWrapper(builder.withMethod(method))
   }
 

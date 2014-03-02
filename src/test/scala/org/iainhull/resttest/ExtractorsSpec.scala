@@ -1,12 +1,12 @@
 package org.iainhull.resttest
 
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import org.scalatest.FlatSpec
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class ExtractorsSpec extends FlatSpec with ShouldMatchers {
+class ExtractorsSpec extends FlatSpec with Matchers {
   import Dsl._
   
   val response = Response(Status.OK, toHeaders("SimpleHeader" -> "SimpleValue", "MultiHeader" -> "Value1", "MultiHeader" -> "Value2"), Some("body"))

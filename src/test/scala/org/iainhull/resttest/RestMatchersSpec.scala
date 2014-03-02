@@ -3,12 +3,12 @@ package org.iainhull.resttest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import org.scalatest.matchers.HavePropertyMatcher
 import org.scalatest.matchers.HavePropertyMatchResult
 
 @RunWith(classOf[JUnitRunner])
-class RestMatcherSpec extends FlatSpec with ShouldMatchers {
+class RestMatcherSpec extends FlatSpec with Matchers {
   import language.implicitConversions
 
   import TestData._

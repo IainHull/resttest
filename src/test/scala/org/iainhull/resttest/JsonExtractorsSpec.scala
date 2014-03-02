@@ -3,12 +3,12 @@ package org.iainhull.resttest
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
 @RunWith(classOf[JUnitRunner])
-class JsonExtractorsSpec extends FlatSpec with ShouldMatchers {
+class JsonExtractorsSpec extends FlatSpec with Matchers {
   import Dsl._
   import JsonExtractors._
   import TestData._

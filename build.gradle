@@ -14,17 +14,17 @@ repositories {
 
     maven {
         // See http://mandubian.com/2013/02/21/play-json-stand-alone/
-        url "https://github.com/mandubian/mandubian-mvn/raw/master/snapshots"
+        //url "https://github.com/mandubian/mandubian-mvn/raw/master/snapshots"
+        url "http://repo.typesafe.com/typesafe/releases/"
     }
 }
 
 dependencies {    
     compile "org.scala-lang:scala-library:${scalaVersion}.0"
-    compile "com.sun.jersey:jersey-core:1.+"
-    compile "com.sun.jersey:jersey-client:1.+"
-    compile "org.scalatest:scalatest_${scalaVersion}:1.9.1"
-    
-   	compile "play:play-json_${scalaVersion}:2.2-SNAPSHOT"    
+    compile "com.sun.jersey:jersey-core:1.17.+"
+    compile "com.sun.jersey:jersey-client:1.17.+"
+    compile "org.scalatest:scalatest_${scalaVersion}:2.0" 
+   	compile "com.typesafe.play:play-json_${scalaVersion}:2.+"    
     
     testCompile "junit:junit:4.+"
 }
