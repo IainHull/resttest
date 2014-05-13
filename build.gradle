@@ -5,28 +5,44 @@ sourceCompatibility=1.7
 targetCompatibility=1.7
 
 ext {
-    scalaVersion = "2.10"
+	versions = [:]
 }
+
+versions.scala = "2.10"
+versions.jersey = "1.17.+"
+versions.scalatest = "2.0"
+versions.spray = "1.2.+"
+versions.junit = "4.+"
+versions.play = "2.+"
 
 
 repositories {
     mavenCentral()
 
     maven {
-        // See http://mandubian.com/2013/02/21/play-json-stand-alone/
-        //url "https://github.com/mandubian/mandubian-mvn/raw/master/snapshots"
         url "http://repo.typesafe.com/typesafe/releases/"
     }
+	
+	maven {
+		url "http://repo.spray.io/"
+	}
 }
 
 dependencies {    
-    compile "org.scala-lang:scala-library:${scalaVersion}.0"
-    compile "com.sun.jersey:jersey-core:1.17.+"
-    compile "com.sun.jersey:jersey-client:1.17.+"
-    compile "org.scalatest:scalatest_${scalaVersion}:2.0" 
-   	compile "com.typesafe.play:play-json_${scalaVersion}:2.+"    
+    compile "org.scala-lang:scala-library:${versions.scala}.0"
+    compile "com.sun.jersey:jersey-core:${versions.jersey}"
+    compile "com.sun.jersey:jersey-client:${versions.jersey}"
+    compile "org.scalatest:scalatest_${versions.scala}:${versions.scalatest}" 
+   	compile "com.typesafe.play:play-json_${versions.scala}:${versions.play}"    
+	   
+   compile "io.spray:spray-can:${versions.spray}"
+   compile "io.spray:spray-routing:${versions.spray}"
+   compile "io.spray:spray-json_${versions.scala}:${versions.spray}"
+   compile "io.spray:spray-testkit:${versions.spray}"
+//	   compile "com.typesafe.akka:akka-actor_${version.scala}:2.1.4"
+//	   compile "com.typesafe.akka:akka-testkit_${version.scala}:2.1.4"
     
-    testCompile "junit:junit:4.+"
+    testCompile "junit:junit:${versions.junit}"
 }
 
 // Use the sbt compiler (not scalac ant task)

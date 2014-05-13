@@ -13,7 +13,7 @@ import org.scalatest.Assertions
  *
  * The `have` keyword supports [[Extractors.ExtractorLike]]s.  See [[ExtractorToHavePropertyMatcher]] for more details.
  *
- * == Example ==
+ * === Example ===
  *
  * {{{
  * using (_ url "http://api.rest.org/person") { implicit rb =>

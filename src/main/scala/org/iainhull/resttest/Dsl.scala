@@ -62,7 +62,7 @@ import java.net.URI
  * There are three ways to execute a request: [[RichRequestBuilder]]`.execute`, [[RichResponse]]`.returning`,
  * [[RichRequestBuilder]]`.asserting`, these can all be applied to `RequestBuilder` instances.
  * 
- * The `execute` method executes the request with the implicit [[Api.Driver]] and returns the `Response`.
+ * The `execute` method executes the request with the implicit [[Api.HttpClient]] and returns the `Response`.
  * {{{
  * val response: Response = GET url "http://api.rest.org/person" execute ()
  * }}}

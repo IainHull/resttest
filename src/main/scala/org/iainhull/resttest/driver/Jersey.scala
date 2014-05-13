@@ -1,19 +1,31 @@
-package org.iainhull.resttest
+package org.iainhull.resttest.driver
 
 import com.sun.jersey.api.client.Client
 import com.sun.jersey.api.client.ClientResponse
-import scala.collection.JavaConverters
 import com.sun.jersey.api.client.WebResource
+import org.iainhull.resttest.Api
+import org.iainhull.resttest.TestDriver
+import scala.collection.JavaConverters
 
-object Jersey {
-  import Api._
+/**
+ * Provides the Jersey httpClient implementation (as a trait to support
+ * mixing in).
+ */
+trait Jersey extends Api {
+  import Jersey.Impl
 
-  implicit val HttpClient: HttpClient = { request =>
+  implicit val httpClient: HttpClient = { request =>
     val response = Impl.createClientResponse(request)
     Response(response.getStatus, Impl.headers(response), Some(response.getEntity(classOf[String])))
   }
+}
 
-  object Impl {
+/**
+ * Provides the Jersey httpClient implementation (as an object to support
+ * straight import).
+ */
+object Jersey extends Jersey {
+  private object Impl {
 
     val jersey = Client.create()
 
@@ -59,4 +71,18 @@ object Jersey {
       }
     }
   }
+}
+
+/**
+ * The JerseySystemTestDriver can be mixed into Rest Test Suites to execute
+ * then with Jersey.  Suites must provide the baseUrl from which all test
+ * paths are relative.
+ */
+trait JerseySystemTestDriver extends TestDriver with Jersey {
+  override implicit def defBuilder = RequestBuilder.emptyBuilder withUrl baseUrl
+
+  /**
+   * Implements must specify the baseUrl from which all test paths are relative.
+   */
+  def baseUrl: String
 }
