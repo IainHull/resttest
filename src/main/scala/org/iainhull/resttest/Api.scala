@@ -17,7 +17,7 @@ import java.net.URLEncoder
  * }
  * }}}
  *
- * or using the [[RequestBuilder]]
+ * or using the [[Api.RequestBuilder]]
  * {{{
  * val request = driver.execute(RequestBuilder().withUrl("http://api.rest.org/person/").withMethod(GET))
  * }}}
@@ -223,5 +223,5 @@ trait Api {
   val Status = Api.Status
 
   def toHeaders(hs: (String, String)*): Map[String, List[String]] = Api.toHeaders(hs: _*)
-  def toQueryString(qs: (String, String)*): String = toQueryString(qs: _*)
+  def toQueryString(qs: (String, String)*): String = Api.toQueryString(qs: _*)
 }

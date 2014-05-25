@@ -10,7 +10,7 @@ ext {
 
 versions.scala = "2.10"
 versions.jersey = "1.17.+"
-versions.scalatest = "2.0"
+versions.scalatest = "2.1.6"
 versions.spray = "1.2.+"
 versions.junit = "4.+"
 versions.play = "2.+"
