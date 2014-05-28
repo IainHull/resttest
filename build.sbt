@@ -14,4 +14,6 @@ libraryDependencies ++= resttestDependencies
 
 parallelExecution in Test := false
 
+net.virtualvoid.sbt.graph.Plugin.graphSettings
+
 
