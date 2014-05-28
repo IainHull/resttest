@@ -11,7 +11,7 @@ class ExtractorsSpec extends FlatSpec with Matchers {
   
   val response = Response(Status.OK, toHeaders("SimpleHeader" -> "SimpleValue", "MultiHeader" -> "Value1", "MultiHeader" -> "Value2"), Some("body"))
   
-  def returning[T](ext: ExtractorLike[T]): T = ext.value(response)
+  def returning[T](ext: ExtractorLike[T]): T = ext.value(response).get
   
   "statusCode" should "return the responses statusCode" in {
     returning(StatusCode) should be(Status.OK)

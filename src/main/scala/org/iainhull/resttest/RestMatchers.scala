@@ -63,7 +63,7 @@ trait RestMatchers {
 
   implicit def extractorToShouldWrapper[T](extractor: ExtractorLike[T])(implicit response: Response): AnyShouldWrapper[T] = {
     Assertions.withClue(extractor.name) {
-      val v: T = extractor.value
+      val v: T = extractor.value.get
       new AnyShouldWrapper[T](v)
     }
   }  
@@ -105,11 +105,12 @@ trait RestMatchers {
   implicit class OptionExtractorToHavePropertyMatcher(extractor: ExtractorLike[Option[_]]) extends HavePropertyMatcher[Response, String] {
     def apply(response: Response) = {
       val actual = extractor.value(response)
+      val isDefined = actual.map(a => a.isDefined).getOrElse(false)
       new HavePropertyMatchResult(
-        actual.isDefined,
+        isDefined,
         extractor.name,
         "defined",
-        (if (actual.isDefined) "" else "not") + " defined")
+        (if (isDefined) "" else "not") + " defined")
     }
   }
 }

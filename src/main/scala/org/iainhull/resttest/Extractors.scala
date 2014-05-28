@@ -1,8 +1,8 @@
 package org.iainhull.resttest
 
 import Api._
-
 import scala.util.Try
+import scala.util.Failure
 
 trait Extractors {
   import language.implicitConversions
@@ -30,8 +30,8 @@ object Extractors {
    */
   trait ExtractorLike[+A] {
     def name: String
-    def unapply(res: Response): Option[A] = Try { value(res) }.toOption
-    def value(implicit res: Response): A
+    def unapply(res: Response): Option[A] = value(res).toOption
+    def value(implicit res: Response): Try[A]
   }
 
   /**
@@ -43,7 +43,14 @@ object Extractors {
    *        The operation to extract the value of type `A` from the `Response`
    */
   case class Extractor[+A](name: String, op: Response => A) extends ExtractorLike[A] {
-    def value(implicit res: Response): A = op(res)
+    override def value(implicit res: Response): Try[A] = {
+      Try { op(res) } recoverWith {
+        case e => 
+          Failure[A](new ExtractorFailedException(
+              "Cannot extract $name from Response: ${e.getMessage}", 
+              e))
+      }
+    }
 
     /**
      * Create a new `Extractor` by executing a new function to modify the result.
@@ -59,6 +66,11 @@ object Extractors {
      * Rename the extractor
      */
     def as(newName: String) = copy(name = newName)
+  }
+  
+  class ExtractorFailedException(message: String, cause: Throwable) extends Exception(message, cause) {
+    def this(message: String) = this(message, null)
+    
   }
 
   val StatusCode = Extractor[Int]("StatusCode", r => r.statusCode)
@@ -105,7 +117,7 @@ object Extractors {
 
     override def name: String = asText.name
     override def unapply(res: Response): Option[String] = asText.unapply(res)
-    override def value(implicit res: Response): String = asText.value
+    override def value(implicit res: Response): Try[String] = asText.value
   }
 
   /**
