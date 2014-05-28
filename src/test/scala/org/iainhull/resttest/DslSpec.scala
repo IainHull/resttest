@@ -100,14 +100,14 @@ class DslSpec extends FlatSpec with Matchers {
       driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person?page=2&per_page=100")))
     }
   }
-  
+
   it should "support abstracting common values with using method" in {
     using(_ url "http://api.rest.org/") { implicit rb =>
       GET / 'person :? ('page -> 2, 'per_page -> 100) execute ()
       driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person?page=2&per_page=100")))
     }
   }
-  
+
   it should "support returning values from the response" in {
     using(_ url "http://api.rest.org/person/") { implicit rb =>
       val (c1, b1) = GET returning (StatusCode, BodyText)
@@ -121,62 +121,61 @@ class DslSpec extends FlatSpec with Matchers {
     using(_ url "http://api.rest.org/person/") { implicit rb =>
       GET asserting (StatusCode === Status.OK)
       driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
-      
+
       GET asserting (Header("X-Person-Id") === "1234")
 
-      val e = evaluating { GET asserting (StatusCode === Status.Created) } should produce[AssertionError]
-      driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
+      val e = the[AssertionError] thrownBy { GET asserting (StatusCode === Status.Created) }
       e should have('message("StatusCode: 200 did not equal 201"))
+      driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
     }
   }
-  
+
   it should "support asserting values not-equals check" in {
     using(_ url "http://api.rest.org/person/") { implicit rb =>
       GET asserting (StatusCode !== Status.Created)
       driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
-      
+
       GET asserting (Header("X-Person-Id") !== "999")
 
-      val e = evaluating { GET asserting (StatusCode !== Status.OK) } should produce[AssertionError]
+      val e = the[AssertionError] thrownBy { GET asserting (StatusCode !== Status.OK) }
       e should have('message("StatusCode: 200 did equal 200"))
     }
   }
-  
+
   it should "support asserting values in check" in {
     using(_ url "http://api.rest.org/person/") { implicit rb =>
       GET asserting (StatusCode in (Status.OK, Status.Created))
       driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
-      
-      val e = evaluating { GET asserting (StatusCode in (Status.Created, Status.Accepted)) } should produce[AssertionError]
+
+      val e = the[AssertionError] thrownBy { GET asserting (StatusCode in (Status.Created, Status.Accepted)) }
       e should have('message("StatusCode: 200 was not in (201, 202)"))
     }
   }
-  
+
   it should "support asserting values Ordered comparison operator checks" in {
     using(_ url "http://api.rest.org/person/") { implicit rb =>
-    GET asserting (StatusCode > 1)
-    GET asserting (StatusCode >= 1)
-    GET asserting (StatusCode < 299)
-    GET asserting (StatusCode <= 299)
-    
-      val e = evaluating { GET asserting (StatusCode > 999) } should produce[AssertionError]
-      driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
+      GET asserting (StatusCode > 1)
+      GET asserting (StatusCode >= 1)
+      GET asserting (StatusCode < 299)
+      GET asserting (StatusCode <= 299)
+
+      val e = the[AssertionError] thrownBy { GET asserting (StatusCode > 999) }
       e should have('message("StatusCode: 200 was not greater than 999"))
+      driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
     }
   }
-  
+
   it should "support 'using' function to abstract common parameters in a readable way" in {
     import JsonExtractors._
-    using (_ url "http://api.rest.org/person/") { implicit rb =>
+    using(_ url "http://api.rest.org/person/") { implicit rb =>
       GET asserting (StatusCode === Status.OK)
       driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
 
-      val e = evaluating { GET asserting (StatusCode === Status.Created) } should produce[AssertionError]
-      driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
+      val e = the[AssertionError] thrownBy { GET asserting (StatusCode === Status.Created) }
       e should have('message("StatusCode: 200 did not equal 201"))
+      driver.lastRequest should have('method(GET), 'url(new URI("http://api.rest.org/person/")))
     }
   }
-
 
   /**
    * These use-cases do not contain any asserts they are simply use to show
@@ -298,7 +297,7 @@ class DslSpec extends FlatSpec with Matchers {
       GET asserting (StatusCode === Status.OK, jsonBodyAsList[Person] === EmptyList)
     }
   }
-  
+
   it should "support expecting on values from the response" in {
     import JsonExtractors._
     val EmptyList = Seq()
@@ -311,9 +310,9 @@ class DslSpec extends FlatSpec with Matchers {
       Response(Status.NotFound, Map(), None) ::
       Response(Status.OK, Map(), Some("[]")) ::
       Nil
-      
+
     val BodyAsPersonList = jsonBodyAsList[Person]
-    val BodyAsPerson= jsonBodyAs[Person]
+    val BodyAsPerson = jsonBodyAs[Person]
     val PersonIdHeader = Header("X-Person-Id")
 
     using(_ url "http://api.rest.org/person") { implicit rb =>
@@ -327,7 +326,7 @@ class DslSpec extends FlatSpec with Matchers {
         case StatusCode(Status.OK) & BodyAsPerson(p) => p should be(Jason)
       }
       GET expecting {
-        case StatusCode(Status.OK) & BodyAsPersonList(xp) => xp should be (Seq(Jason))
+        case StatusCode(Status.OK) & BodyAsPersonList(xp) => xp should be(Seq(Jason))
       }
       DELETE / id expecting {
         case StatusCode(Status.OK) =>
@@ -340,7 +339,7 @@ class DslSpec extends FlatSpec with Matchers {
       }
     }
   }
-    
+
   it should "support 'using' function to abstract common parameters in a readable way" in {
     import JsonExtractors._
     val EmptyList = Seq()
@@ -354,7 +353,7 @@ class DslSpec extends FlatSpec with Matchers {
       Response(Status.OK, Map(), Some("[]")) ::
       Nil
 
-    using (_ url "http://api.rest.org/person") { implicit rb =>
+    using(_ url "http://api.rest.org/person") { implicit rb =>
       GET asserting (StatusCode === Status.OK, jsonBodyAsList[Person] === EmptyList)
       val id = POST body personJson asserting (StatusCode === Status.Created) returning (Header("X-Person-Id"))
       GET / id asserting (StatusCode === Status.OK, jsonBodyAs[Person] === Jason)
