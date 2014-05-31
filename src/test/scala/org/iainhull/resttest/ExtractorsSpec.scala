@@ -33,7 +33,7 @@ class ExtractorsSpec extends FlatSpec with Matchers {
     returning(Header("SimpleHeader")) should be("SimpleValue")
     returning(Header("MultiHeader")) should be("Value1,Value2")
     
-    evaluating { returning(Header("NotAHeader")) } should produce [NoSuchElementException]
+    an [NoSuchElementException] should be thrownBy { returning(Header("NotAHeader")) } 
   }
 
   "Header.asOption" should "return the responses header value as an Option[List[String]]" in {
@@ -48,6 +48,6 @@ class ExtractorsSpec extends FlatSpec with Matchers {
     returning(Header("SimpleHeader").asList) should be(List("SimpleValue"))
     returning(Header("MultiHeader").asList) should be(List("Value1","Value2"))
     
-    evaluating { returning(Header("NotAHeader").asList) } should produce [NoSuchElementException]
+    an [NoSuchElementException] should be thrownBy  { returning(Header("NotAHeader").asList) }
   }
 }
