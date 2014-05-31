@@ -8,6 +8,7 @@ trait Extractors {
   import language.implicitConversions
 
   type ExtractorLike[+A] = Extractors.ExtractorLike[A]
+  type ExtractorFailedException = Extractors.ExtractorFailedException
 
   type Extractor[+A] = Extractors.Extractor[A]
   val Extractor = Extractors.Extractor
@@ -47,7 +48,7 @@ object Extractors {
       Try { op(res) } recoverWith {
         case e => 
           Failure[A](new ExtractorFailedException(
-              "Cannot extract $name from Response: ${e.getMessage}", 
+              s"Cannot extract $name from Response: ${e.getMessage}", 
               e))
       }
     }

@@ -33,7 +33,9 @@ class ExtractorsSpec extends FlatSpec with Matchers {
     returning(Header("SimpleHeader")) should be("SimpleValue")
     returning(Header("MultiHeader")) should be("Value1,Value2")
     
-    an [NoSuchElementException] should be thrownBy { returning(Header("NotAHeader")) } 
+    val ex = the [ExtractorFailedException] thrownBy { returning(Header("NotAHeader")) }
+    ex.getMessage should include("Header(NotAHeader)")
+    ex.getCause.getClass should be(classOf[NoSuchElementException])
   }
 
   "Header.asOption" should "return the responses header value as an Option[List[String]]" in {
@@ -48,6 +50,8 @@ class ExtractorsSpec extends FlatSpec with Matchers {
     returning(Header("SimpleHeader").asList) should be(List("SimpleValue"))
     returning(Header("MultiHeader").asList) should be(List("Value1","Value2"))
     
-    an [NoSuchElementException] should be thrownBy  { returning(Header("NotAHeader").asList) }
+    val ex = the [ExtractorFailedException] thrownBy { returning(Header("NotAHeader").asList ) }
+    ex.getMessage should include("Header(NotAHeader)")
+    ex.getCause.getClass should be(classOf[NoSuchElementException])
   }
 }

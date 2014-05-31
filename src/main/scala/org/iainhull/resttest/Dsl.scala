@@ -124,12 +124,12 @@ trait Dsl extends Api with Extractors {
 
     def asserting(assertions: Assertion*)(implicit client: HttpClient): Response = {
       val res = execute()
-      val assertionResults = for {
+      val assertionFailures = for {
         a <- assertions
         r <- a.result(res)
       } yield r
-      if (assertionResults.nonEmpty) {
-        throw assertionFailed(assertionResults)
+      if (assertionFailures.nonEmpty) {
+        throw assertionFailed(assertionFailures)
       }
       res
     }
@@ -235,12 +235,14 @@ trait Dsl extends Api with Extractors {
     def in[B >: A](expectedVals: B*): Assertion = makeAssertion(expectedVals.contains(_), expectedVals.mkString("(", ", ", ")"), "was not in")
     def notIn[B >: A](expectedVals: B*): Assertion = makeAssertion(!expectedVals.contains(_), expectedVals.mkString("(", ", ", ")"), "was in")
 
-    private def makeAssertion[B](pred: A => Boolean, expected: Any, text: String) = new Assertion {
+    private def makeAssertion[B](pred: A => Boolean, expected: B, text: String) = new Assertion {
       override def result(res: Response): Option[String] = {
         val actual = ext.value(res)
         actual match {
-          case Success(a) =>
-            if (!pred(a)) Some(s"${ext.name}: a $text $expected") else None
+          case Success(a) if (!pred(a)) => 
+            Some(s"${ext.name}: $a $text $expected")
+          case Success(_) => 
+            None
           case Failure(e) =>
             Some(e.getMessage)
         }

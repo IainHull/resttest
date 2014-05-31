@@ -4,6 +4,7 @@ import org.scalatest.Matchers.AnyShouldWrapper
 import org.scalatest.matchers.HavePropertyMatcher
 import org.scalatest.matchers.HavePropertyMatchResult
 import org.scalatest.Assertions
+import scala.util.Success
 
 /**
  * Adds [[http://www.scalatest.org/ ScalaTest]] support to the RestTest [[Dsl]].
@@ -83,7 +84,7 @@ trait RestMatchers {
         def apply(response: Response) = {
           val actual = extractor.value(response)
           new HavePropertyMatchResult(
-            actual == expected,
+            actual == Success(expected),
             extractor.name,
             expected.toString,
             actual.toString)
