@@ -99,9 +99,7 @@ trait Dsl extends Api with Extractors {
   implicit def methodToRequestBuilder(method: Method)(implicit builder: RequestBuilder): RequestBuilder = builder.withMethod(method)
   implicit def methodToRichRequestBuilder(method: Method)(implicit builder: RequestBuilder): RichRequestBuilder = new RichRequestBuilder(methodToRequestBuilder(method)(builder))
 
-  trait Assertion {
-    def result(res: Response): Option[String]
-  }
+  type Assertion = Function1[Response, Option[String]]
 
   def assertionFailed(assertionResults: Seq[String]): Throwable = {
     new AssertionError(assertionResults.mkString(","))
@@ -126,7 +124,7 @@ trait Dsl extends Api with Extractors {
       val res = execute()
       val assertionFailures = for {
         a <- assertions
-        r <- a.result(res)
+        r <- a(res)
       } yield r
       if (assertionFailures.nonEmpty) {
         throw assertionFailed(assertionFailures)
@@ -235,20 +233,17 @@ trait Dsl extends Api with Extractors {
     def in[B >: A](expectedVals: B*): Assertion = makeAssertion(expectedVals.contains(_), expectedVals.mkString("(", ", ", ")"), "was not in")
     def notIn[B >: A](expectedVals: B*): Assertion = makeAssertion(!expectedVals.contains(_), expectedVals.mkString("(", ", ", ")"), "was in")
 
-    private def makeAssertion[B](pred: A => Boolean, expected: B, text: String) = new Assertion {
-      override def result(res: Response): Option[String] = {
-        val actual = ext.value(res)
-        actual match {
-          case Success(a) if (!pred(a)) => 
-            Some(s"${ext.name}: $a $text $expected")
-          case Success(_) => 
-            None
-          case Failure(e) =>
-            Some(e.getMessage)
-        }
+    private def makeAssertion[B](pred: A => Boolean, expected: B, text: String): Assertion = { res =>
+      val actual = ext.value(res)
+      actual match {
+        case Success(a) if (!pred(a)) =>
+          Some(s"${ext.name}: $a $text $expected")
+        case Success(_) =>
+          None
+        case Failure(e) =>
+          Some(e.getMessage)
       }
     }
-
   }
 }
 
