@@ -4,7 +4,6 @@ object Dependencies {
   val jerseyVersion = "1.17.+"
   val scalatestVersion = "2.1.6"
   val sprayVersion = "1.3.1-20140423"
-  val junitVersion = "4.+"
   val playVersion = "2.3.0-RC2"
 
   val jersey = "com.sun.jersey" % "jersey-core" % jerseyVersion
@@ -16,7 +15,5 @@ object Dependencies {
   val sprayRouting = "io.spray" %% "spray-routing" % sprayVersion
   val sprayTestkit = "io.spray" %% "spray-testkit" % sprayVersion
 
-  val junit = "junit" % "junit" % junitVersion
-
-  val resttestDependencies = Seq(jersey, jerseyClient, scalatest, playJson, sprayCan, sprayRouting, sprayTestkit, junit)
+  val resttestDependencies = Seq(jersey, jerseyClient, scalatest, playJson, sprayCan, sprayRouting, sprayTestkit)
 }

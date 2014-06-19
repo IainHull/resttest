@@ -2,10 +2,7 @@ package org.iainhull.resttest
 
 import org.scalatest.Matchers
 import org.scalatest.FlatSpec
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
 class ExtractorsSpec extends FlatSpec with Matchers {
   import Dsl._
   

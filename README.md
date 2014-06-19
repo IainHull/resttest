@@ -30,14 +30,33 @@ You can follow the [progress on my blog](http://iainhull.github.io/tags.html#res
 * [The Builder as the basis for a DSL](http://iainhull.github.io/2013/07/02/a-simple-rest-dsl-part-2/)
 * [Extracting and asserting on response values](http://iainhull.github.io/2013/07/14/a-simple-rest-dsl-part-3/)
 * [Grouping common request configuration with the `using` method](http://iainhull.github.io/2013/07/14/a-simple-rest-dsl-part-4/)
+* [How to structure DLS projects](http://iainhull.github.io/2014/05/18/a-simple-rest-dsl-part-5/)
+* [Improvements to Extractors](http://iainhull.github.io/2014/06/19/a-simple-rest-dsl-part-6/)
 * Integrating RestTest with ScalaTest (planned)
 * How to document a DLS (planned)
-* How to structure DLS projects (planned)
 * Summary of Scala techniques and resources for creating DSLs (planned)
 
 ## How to build
 
-This project is built with [gradle](http://www.gradle.org/).  It includes the gradle wrapper which will download gradle and build the project for you (the only prereq is Java).
+This project has been migrated to Scala 2.11 and the build ported to [SBT](http://www.scala-sbt.org/).
+
+To download and build RestTest just:
+
+```
+git clone git@github.com:IainHull/resttest.git
+cd resttest
+sbt test
+```
+
+To create a fully configured eclipse project just:
+
+```
+sbt eclipse with-source=true
+```
+
+
+### Old build using Gradle ###
+This project used to be built with [gradle](http://www.gradle.org/).  It still includes the gradle files and the gradle wrapper which will download gradle and build the project for you (the only prereq is Java).
 
 To download and build RestTest just:
 

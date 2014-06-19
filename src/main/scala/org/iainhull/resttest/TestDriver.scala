@@ -17,10 +17,8 @@ package org.iainhull.resttest
  *   }
  * }
  *
- * @RunWith(classOf[JUnitRunner])
  * class PersonUnitSpec extends PersonSpec with SprayUnitTestDriver with MyService
  * 
- * @RunWith(classOf[JUnitRunner])
  * class PersonSystemSpec extends PersonSpec with JerseySystemTestDriver {
  *   override val baseUrl = "http://localhost:9000"
  * }
