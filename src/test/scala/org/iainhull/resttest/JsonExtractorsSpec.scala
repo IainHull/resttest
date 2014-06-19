@@ -43,8 +43,17 @@ class JsonExtractorsSpec extends FlatSpec with Matchers {
     evaluate(jsonBodyAsList[Int](__ \\ "age"), jsonList) should be(List(25, 20))
   }
 
+  it should "include the type in its name" in {
+    jsonBodyAsList[Person].name should be ("jsonBodyAsList[Person]")
+  }
+  
+
   "jsonBodyAs" should "deserialise to scala types" in {
     evaluate(jsonBodyAs[Person], Json parse personJson) should be(Jason)
     evaluate(jsonBodyAs[String](__ \ "user" \ "name"), jsonDoc) should be("toto")
+  }
+  
+  it should "include the type in its name" in {
+    jsonBodyAs[Person].name should be ("jsonBodyAs[Person]")
   }
 }
